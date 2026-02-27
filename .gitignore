@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Flask
+instance/
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
