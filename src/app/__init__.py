@@ -2,7 +2,7 @@ from flask import Flask
 
 from app.config import Config
 from app.models import db
-from app.routes import main_bp
+from app.routes import register_blueprints
 
 
 def create_app() -> Flask:
@@ -10,6 +10,6 @@ def create_app() -> Flask:
     app.config.from_object(Config)
     db.init_app(app)
 
-    app.register_blueprint(main_bp)
+    register_blueprints(app)
 
     return app
