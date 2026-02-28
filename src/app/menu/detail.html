@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Menu | Food Hall</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --surface: #fff9f1;
+      --text: #1f1a14;
+      --muted: #6e6458;
+      --brand: #c8521f;
+      --brand-dark: #8e3312;
+      --line: #e6d7c8;
+      --soft: #fff4e8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at -10% -25%, #ffe8bf 0%, transparent 42%),
+        radial-gradient(circle at 105% -18%, #ffd7c4 0%, transparent 44%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1040px, 92%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      padding: 1rem 0 0.8rem;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--brand-dark);
+      font-weight: 700;
+      border-bottom: 1px solid transparent;
+    }
+
+    .back-link:hover {
+      border-color: var(--brand-dark);
+    }
+
+    .layout {
+      padding: 1rem 0 2.2rem;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.2rem;
+      align-items: stretch;
+    }
+
+    .image-panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 12px 22px rgba(80, 55, 32, 0.08);
+      min-height: 350px;
+      position: relative;
+    }
+
+    .image {
+      width: 100%;
+      height: 100%;
+      min-height: 350px;
+      background: linear-gradient(140deg, #f7b065, #d95b21);
+      display: grid;
+      place-items: center;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+
+    .badge {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      background: #ffffff;
+      color: #1f7e37;
+      border-radius: 999px;
+      padding: 0.32rem 0.66rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .info {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: 0 12px 22px rgba(80, 55, 32, 0.08);
+      padding: 1.1rem;
+      display: grid;
+      gap: 0.9rem;
+      align-content: start;
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 2.2vw, 2rem);
+      line-height: 1.22;
+      color: #2a2119;
+    }
+
+    .price {
+      color: var(--brand-dark);
+      font-weight: 800;
+      font-size: 1.28rem;
+    }
+
+    .desc {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .meta {
+      display: grid;
+      gap: 0.65rem;
+      padding: 0.8rem;
+      border-radius: 12px;
+      background: var(--soft);
+      border: 1px solid #f1decb;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .meta-row span:first-child {
+      color: var(--muted);
+    }
+
+    .section-title {
+      font-weight: 800;
+      color: #2a2119;
+      margin-top: 0.1rem;
+      font-size: 1.02rem;
+    }
+
+    ul {
+      padding-left: 1.1rem;
+      color: var(--muted);
+      display: grid;
+      gap: 0.4rem;
+      font-size: 0.94rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.2rem;
+    }
+
+    .btn {
+      text-decoration: none;
+      border-radius: 10px;
+      padding: 0.62rem 0.9rem;
+      font-weight: 700;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.94rem;
+    }
+
+    .btn-back {
+      color: var(--brand-dark);
+      border-color: var(--brand-dark);
+      background: transparent;
+    }
+
+    .btn-main {
+      color: #ffffff;
+      background: linear-gradient(130deg, var(--brand) 0%, #ea7e2a 100%);
+      box-shadow: 0 10px 20px rgba(200, 82, 31, 0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.99);
+    }
+
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .image,
+      .image-panel {
+        min-height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a href="catalog.html" class="back-link">&larr; Kembali ke katalog</a>
+    </div>
+
+    <main class="layout">
+      <section class="image-panel">
+        <span class="badge">Tersedia</span>
+        <div class="image">Nasi Goreng Spesial</div>
+      </section>
+
+      <section class="info">
+        <h1>Nasi Goreng Spesial Food Hall</h1>
+        <p class="price">Rp28.000</p>
+        <p class="desc">
+          Nasi goreng dengan bumbu khas, telur orak-arik, ayam suwir, dan sayur segar.
+          Cocok untuk makan siang maupun makan malam.
+        </p>
+
+        <div class="meta">
+          <div class="meta-row"><span>Kategori</span><strong>Makanan Utama</strong></div>
+          <div class="meta-row"><span>Estimasi siap</span><strong>12-15 menit</strong></div>
+          <div class="meta-row"><span>Level pedas</span><strong>Sedang</strong></div>
+          <div class="meta-row"><span>Kalori</span><strong>530 kkal</strong></div>
+        </div>
+
+        <h2 class="section-title">Komposisi</h2>
+        <ul>
+          <li>Nasi, ayam suwir, telur, sawi, daun bawang</li>
+          <li>Bumbu bawang putih, bawang merah, kecap manis</li>
+          <li>Acar timun, kerupuk, dan sambal pendamping</li>
+        </ul>
+
+        <div class="actions">
+          <a href="catalog.html" class="btn btn-back">Kembali</a>
+          <a href="#" class="btn btn-main">Tambah ke Keranjang</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
