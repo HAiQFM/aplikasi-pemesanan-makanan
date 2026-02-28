@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Beranda - Aplikasi Pemesanan Makanan{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Selamat Datang di FoodOrder</h1>
+  <p>
+    Platform sederhana untuk memesan makanan dengan alur cepat: login, checkout, dan pantau riwayat pesanan.
+  </p>
+  <div class="hero-actions">
+    <a class="btn" href="{{ url_for('auth.login') }}">Masuk Akun</a>
+    <a class="btn" href="{{ url_for('auth.register') }}">Buat Akun</a>
+    <a class="btn" href="{{ url_for('order.checkout') }}">Mulai Checkout</a>
+  </div>
+</section>
+
+<section class="feature-grid">
+  <article class="feature-card">
+    <h2>Alur Ringkas</h2>
+    <p>Registrasi atau login, isi checkout, lalu sistem menampilkan status pesanan.</p>
+  </article>
+  <article class="feature-card">
+    <h2>Status Pesanan</h2>
+    <p>Cek riwayat untuk melihat daftar pesanan yang sudah diproses.</p>
+  </article>
+  <article class="feature-card">
+    <h2>Cepat dan Mudah</h2>
+    <p>Form sederhana agar pengguna bisa langsung menyelesaikan pemesanan.</p>
+  </article>
+</section>
+{% endblock %}

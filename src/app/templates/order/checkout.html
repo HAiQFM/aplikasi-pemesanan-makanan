@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout - Aplikasi Pemesanan Makanan</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #0f172a; }
+    .container { max-width: 680px; margin: 40px auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+    h1 { margin-top: 0; }
+    .desc { color: #475569; margin-bottom: 20px; }
+    form { display: grid; gap: 12px; }
+    label { font-weight: 600; font-size: 14px; }
+    input, select, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; }
+    textarea { min-height: 90px; resize: vertical; }
+    button { border: 0; border-radius: 8px; padding: 12px; background: #0ea5e9; color: #fff; font-weight: 700; cursor: pointer; }
+    button:hover { background: #0284c7; }
+    .links { margin-top: 16px; }
+    .links a { color: #0369a1; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Checkout</h1>
+    <p class="desc">Lengkapi detail pengiriman lalu konfirmasi pesanan.</p>
+
+    <form method="post" action="{{ url_for('order.checkout') }}">
+      <div>
+        <label for="customer_name">Nama Penerima</label>
+        <input id="customer_name" name="customer_name" type="text" placeholder="Nama lengkap" required />
+      </div>
+
+      <div>
+        <label for="address">Alamat Pengiriman</label>
+        <textarea id="address" name="address" placeholder="Masukkan alamat lengkap" required></textarea>
+      </div>
+
+      <div>
+        <label for="payment_method">Metode Pembayaran</label>
+        <select id="payment_method" name="payment_method" required>
+          <option value="">Pilih metode</option>
+          <option value="cash">Cash</option>
+          <option value="transfer">Transfer Bank</option>
+          <option value="ewallet">E-Wallet</option>
+        </select>
+      </div>
+
+      <button type="submit">Buat Pesanan</button>
+    </form>
+
+    <p class="links"><a href="{{ url_for('order.history') }}">Lihat riwayat pesanan</a></p>
+  </main>
+</body>
+</html>

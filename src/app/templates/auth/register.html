@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registrasi - Aplikasi Pemesanan Makanan</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-card">
+      <h1>Daftar Akun</h1>
+      <p class="subtitle">Buat akun baru untuk mulai memesan makanan.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flash-list">
+            {% for category, message in messages %}
+              <li class="flash flash-{{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
+        <label for="name">Nama</label>
+        <input id="name" name="name" type="text" placeholder="Masukkan nama lengkap" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="nama@email.com" required />
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Minimal 8 karakter" minlength="8" required />
+
+        <button type="submit">Daftar</button>
+      </form>
+
+      <p class="switch-link">
+        Sudah punya akun?
+        <a href="{{ url_for('auth.login') }}">Login di sini</a>
+      </p>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
