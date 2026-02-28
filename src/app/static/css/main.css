@@ -67,6 +67,11 @@ body {
   color: var(--primary);
 }
 
+.nav-links a.is-active {
+  color: var(--primary);
+  font-weight: 700;
+}
+
 .container {
   padding: 24px 0 40px;
 }
@@ -83,6 +88,10 @@ body {
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .flash-success {
@@ -98,6 +107,16 @@ body {
 .flash-message {
   background: #f1f5f9;
   color: var(--text);
+}
+
+.flash-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0 2px;
 }
 
 .btn {
