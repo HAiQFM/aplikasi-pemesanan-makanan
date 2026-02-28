@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Beranda - Aplikasi Pemesanan Makanan{% endblock %}
+
+{% block content %}
+<section style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;">
+  <h1 style="margin:0 0 10px;">Selamat Datang di FoodOrder</h1>
+  <p style="margin:0 0 18px;color:#475569;max-width:700px;">
+    Platform sederhana untuk memesan makanan dengan alur cepat: login, checkout, dan pantau riwayat pesanan.
+  </p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <a class="btn" href="{{ url_for('auth.login') }}">Masuk Akun</a>
+    <a class="btn" href="{{ url_for('auth.register') }}">Buat Akun</a>
+    <a class="btn" href="{{ url_for('order.checkout') }}">Mulai Checkout</a>
+  </div>
+</section>
+
+<section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px;">
+  <article style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+    <h2 style="margin:0 0 8px;font-size:1.05rem;">Alur Ringkas</h2>
+    <p style="margin:0;color:#475569;">Registrasi atau login, isi checkout, lalu sistem menampilkan status pesanan.</p>
+  </article>
+  <article style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+    <h2 style="margin:0 0 8px;font-size:1.05rem;">Status Pesanan</h2>
+    <p style="margin:0;color:#475569;">Cek riwayat untuk melihat daftar pesanan yang sudah diproses.</p>
+  </article>
+  <article style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+    <h2 style="margin:0 0 8px;font-size:1.05rem;">Cepat dan Mudah</h2>
+    <p style="margin:0;color:#475569;">Form sederhana agar pengguna bisa langsung menyelesaikan pemesanan.</p>
+  </article>
+</section>
+{% endblock %}
