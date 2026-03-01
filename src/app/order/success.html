@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesanan Berhasil | Food Hall</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --surface: #fff9f1;
+      --text: #1f1a14;
+      --muted: #6d6357;
+      --line: #e7d8c8;
+      --brand: #c8521f;
+      --brand-dark: #8d3312;
+      --ok: #1d8f3e;
+      --ok-bg: #eefcf1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% -20%, #ffe5bd 0%, transparent 45%),
+        radial-gradient(circle at 90% -25%, #ffd7c5 0%, transparent 43%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(920px, 92%);
+      margin: 0 auto;
+      padding: 1rem 0 2rem;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--brand-dark);
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .card {
+      margin-top: 0.9rem;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 22px rgba(81, 56, 34, 0.08);
+      padding: 1.1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .status {
+      text-align: center;
+      padding: 0.5rem 0.5rem 0.2rem;
+      display: grid;
+      gap: 0.55rem;
+      justify-items: center;
+    }
+
+    .check {
+      width: 66px;
+      height: 66px;
+      border-radius: 999px;
+      background: var(--ok-bg);
+      color: var(--ok);
+      border: 2px solid #bdeac8;
+      display: grid;
+      place-items: center;
+      font-size: 1.7rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 1.95rem);
+      color: #2b2118;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 580px;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 0.34rem 0.7rem;
+      background: #fff6ea;
+      border: 1px solid #f0d8bf;
+      color: #875529;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 0.9rem;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf8;
+      padding: 0.85rem;
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+      color: #2a2118;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      color: #5b4f42;
+      font-size: 0.92rem;
+    }
+
+    .row.total {
+      border-top: 1px dashed var(--line);
+      padding-top: 0.55rem;
+      color: #2a2118;
+      font-weight: 800;
+    }
+
+    .meta-row {
+      display: grid;
+      gap: 0.2rem;
+      font-size: 0.9rem;
+      color: #4f4337;
+    }
+
+    .meta-row span {
+      color: var(--muted);
+      font-size: 0.83rem;
+    }
+
+    .eta {
+      border: 1px solid #d5efda;
+      background: #f3fff5;
+      color: #2d6d3a;
+      border-radius: 10px;
+      padding: 0.62rem 0.72rem;
+      font-size: 0.86rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border-radius: 10px;
+      padding: 0.66rem 0.9rem;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.9rem;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .btn-main {
+      color: #fff;
+      background: linear-gradient(130deg, var(--brand), #ea7f2a);
+      box-shadow: 0 10px 18px rgba(200, 82, 31, 0.22);
+    }
+
+    .btn-secondary {
+      color: var(--brand-dark);
+      border-color: var(--brand-dark);
+      background: transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.99);
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../menu/catalog.html" class="back-link">&larr; Kembali ke menu</a>
+
+    <main class="card">
+      <section class="status">
+        <div class="check">&#10003;</div>
+        <h1>Pesanan Berhasil Dibuat</h1>
+        <p class="subtitle">
+          Terima kasih. Pesanan Anda sudah kami terima dan sedang diproses oleh restoran.
+        </p>
+        <span class="badge">Order #FH-2026-0120</span>
+      </section>
+
+      <section class="grid">
+        <div class="panel">
+          <h2>Detail Pesanan</h2>
+          <div class="row"><span>1x Nasi Goreng Spesial</span><strong>Rp28.000</strong></div>
+          <div class="row"><span>2x Es Teh Lemon</span><strong>Rp20.000</strong></div>
+          <div class="row"><span>Biaya layanan</span><strong>Rp2.000</strong></div>
+          <div class="row"><span>Ongkir</span><strong>Rp5.000</strong></div>
+          <div class="row"><span>Diskon</span><strong>- Rp3.000</strong></div>
+          <div class="row total"><span>Total Bayar</span><strong>Rp52.000</strong></div>
+        </div>
+
+        <div class="panel">
+          <h2>Informasi Pengiriman</h2>
+          <div class="meta-row">
+            <span>Nama Penerima</span>
+            <strong>Budi Santoso</strong>
+          </div>
+          <div class="meta-row">
+            <span>Metode Pembayaran</span>
+            <strong>QRIS</strong>
+          </div>
+          <div class="meta-row">
+            <span>Alamat</span>
+            <strong>Jl. Merdeka No. 12, Jakarta</strong>
+          </div>
+          <div class="eta">Estimasi tiba: <strong>30-45 menit</strong></div>
+        </div>
+      </section>
+
+      <section class="actions">
+        <a href="./history.html" class="btn btn-main">Lihat Riwayat Pesanan</a>
+        <a href="../menu/catalog.html" class="btn btn-secondary">Pesan Lagi</a>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
