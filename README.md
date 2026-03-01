@@ -86,7 +86,7 @@ pytest -q
 
 ## Daftar Kontributor
 
-- Firas Faiq Maulana
-- Sindi Susanti
-- Fauzan Iffat Chairrullah
-- Fatya Lihawa Awaliyah
+- Sindi Susanti - 001
+- Fauzan Iffat Chairrullah - 004
+- Fatya Lihawa Awaliyah - 006
+- Firas Faiq Maulana - 015
