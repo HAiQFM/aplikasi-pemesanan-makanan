@@ -7,8 +7,10 @@ class Menu(db.Model):
     __tablename__ = "menus"
 
     id = db.Column(db.Integer, primary_key=True)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False, index=True)
-    name = db.Column(db.String(150), nullable=False, index=True)
+    category_id = db.Column(
+        db.Integer, db.ForeignKey("categories.id"), nullable=False, index=True
+    )
+    name = db.Column(db.String(120), nullable=False, index=True)
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     image_url = db.Column(db.String(255), nullable=True)
@@ -16,6 +18,7 @@ class Menu(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     category = db.relationship("Category", back_populates="menus")
+    carts = db.relationship("Cart", back_populates="menu", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Menu {self.name}>"
+        return f"<Menu {self.name} price={self.price}>"

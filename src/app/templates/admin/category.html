@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kategori Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Kelola Kategori</h1>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Tambah Kategori</h2>
+            <form method="post">
+                <p>
+                    <label for="name">Nama Kategori</label><br>
+                    <input type="text" id="name" name="name" required>
+                </p>
+                <p>
+                    <label for="description">Deskripsi</label><br>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </p>
+                <p>
+                    <button type="submit">Simpan</button>
+                </p>
+            </form>
+        </section>
+
+        <section>
+            <h2>Daftar Kategori</h2>
+            <table border="1" cellpadding="8" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Deskripsi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3">Belum ada data kategori.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+</main>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

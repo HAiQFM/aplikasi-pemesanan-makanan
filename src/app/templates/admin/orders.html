@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Daftar Pesanan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Pesanan Masuk</h1>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Daftar Pesanan</h2>
+            <table border="1" cellpadding="8" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>ID Pesanan</th>
+                        <th>Pelanggan</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5">Belum ada data pesanan.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+</main>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
