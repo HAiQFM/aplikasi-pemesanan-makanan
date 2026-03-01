@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Dashboard Admin</h1>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Ringkasan Sistem</h2>
+            <p>Selamat datang di panel admin. Gunakan menu di bawah untuk mengelola kategori, menu, dan pesanan pelanggan.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Indikator</th>
+                        <th>Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total Menu</td>
+                        <td>{{ total_menu if total_menu is defined else 0 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Kategori</td>
+                        <td>{{ total_category if total_category is defined else 0 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Pesanan</td>
+                        <td>{{ total_order if total_order is defined else 0 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Pesanan Pending</td>
+                        <td>{{ pending_order if pending_order is defined else 0 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Aksi Cepat</h2>
+            <ul>
+                <li><a href="{{ url_for('admin.menu_add') }}">Tambah menu baru</a></li>
+                <li><a href="{{ url_for('admin.menu_list') }}">Lihat dan edit daftar menu</a></li>
+                <li><a href="{{ url_for('admin.categories') }}">Kelola kategori menu</a></li>
+                <li><a href="{{ url_for('admin.orders') }}">Cek pesanan terbaru</a></li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Pesanan Terbaru</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Pesanan</th>
+                        <th>Pelanggan</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_orders is defined and recent_orders %}
+                        {% for order in recent_orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.user.name if order.user is defined and order.user else 'Pelanggan' }}</td>
+                                <td>Rp {{ order.total_amount }}</td>
+                                <td>{{ order.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Belum ada data pesanan terbaru.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
