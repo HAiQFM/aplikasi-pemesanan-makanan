@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kategori Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Kelola Kategori</h1>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Tambah Kategori</h2>
+            <form method="post" action="{{ url_for('admin.categories') }}">
+                <p>
+                    <label for="name">Nama Kategori</label><br>
+                    <input type="text" id="name" name="name" placeholder="Contoh: Makanan Berat" required>
+                </p>
+                <p>
+                    <label for="description">Deskripsi</label><br>
+                    <textarea id="description" name="description" rows="3" placeholder="Deskripsi singkat kategori"></textarea>
+                </p>
+                <p>
+                    <button type="submit">Simpan Kategori</button>
+                </p>
+            </form>
+        </section>
+
+        <section>
+            <h2>Daftar Kategori</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                        <th>Deskripsi</th>
+                        <th>Jumlah Menu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if categories is defined and categories %}
+                        {% for category in categories %}
+                            <tr>
+                                <td>{{ category.id }}</td>
+                                <td>{{ category.name }}</td>
+                                <td>{{ category.description or '-' }}</td>
+                                <td>{{ category.menus|length if category.menus is defined else 0 }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Belum ada data kategori.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
