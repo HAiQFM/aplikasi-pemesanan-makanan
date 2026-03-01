@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Riwayat Pesanan - Aplikasi Pemesanan Makanan</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #0f172a; }
+    .container { max-width: 760px; margin: 40px auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+    h1 { margin-top: 0; }
+    .subtitle { color: #475569; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f1f5f9; }
+    .status { font-weight: 600; color: #0369a1; }
+    a { color: #0369a1; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Riwayat Pesanan</h1>
+    <p class="subtitle">Daftar pesanan terakhir Anda.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID Pesanan</th>
+          <th>Tanggal</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>#ORD-001</td>
+          <td>28 Februari 2026</td>
+          <td>Rp75.000</td>
+          <td class="status">Diproses</td>
+        </tr>
+        <tr>
+          <td>#ORD-002</td>
+          <td>26 Februari 2026</td>
+          <td>Rp52.000</td>
+          <td class="status">Selesai</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><a href="{{ url_for('order.checkout') }}">Buat pesanan baru</a></p>
+  </main>
+</body>
+</html>
