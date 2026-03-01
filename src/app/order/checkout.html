@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | Food Hall</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --surface: #fff9f1;
+      --text: #1f1a14;
+      --muted: #6d6357;
+      --line: #e7d8c8;
+      --brand: #c8521f;
+      --brand-dark: #8d3312;
+      --soft: #fff3e6;
+      --ok: #2f9e44;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% -20%, #ffe5bd 0%, transparent 45%),
+        radial-gradient(circle at 90% -25%, #ffd7c5 0%, transparent 43%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+      padding-bottom: 2rem;
+    }
+
+    .topbar {
+      padding: 1rem 0 0.6rem;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--brand-dark);
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .title {
+      padding: 0.5rem 0 1.2rem;
+    }
+
+    h1 {
+      font-size: clamp(1.45rem, 2.2vw, 2rem);
+      line-height: 1.2;
+      color: #2b2118;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(81, 56, 34, 0.07);
+    }
+
+    .checkout-form {
+      padding: 1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf8;
+      padding: 0.9rem;
+      display: grid;
+      gap: 0.7rem;
+    }
+
+    .section h2 {
+      font-size: 1rem;
+      color: #2a2118;
+    }
+
+    .grid {
+      display: grid;
+      gap: 0.7rem;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.87rem;
+      color: #5e4f40;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid #dcc8b4;
+      border-radius: 10px;
+      padding: 0.62rem 0.75rem;
+      font-size: 0.92rem;
+      color: #2a2118;
+      background: #fff;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #cf7a49;
+      box-shadow: 0 0 0 3px rgba(200, 82, 31, 0.12);
+    }
+
+    .payment-option {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.65rem 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: #fff;
+      font-size: 0.92rem;
+      color: #473a2d;
+    }
+
+    .payment-option input {
+      width: auto;
+    }
+
+    .summary {
+      padding: 1rem;
+      display: grid;
+      gap: 0.9rem;
+      position: sticky;
+      top: 1rem;
+    }
+
+    .summary h2 {
+      font-size: 1.05rem;
+      color: #2a2118;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.92rem;
+      color: #5d5143;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .row.total {
+      border-top: 1px dashed var(--line);
+      padding-top: 0.7rem;
+      color: #2a2118;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .eta {
+      border: 1px solid #d5efda;
+      background: #f3fff5;
+      color: #2d6d3a;
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      font-size: 0.86rem;
+    }
+
+    .btn {
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.92rem;
+      width: 100%;
+    }
+
+    .btn-main {
+      color: #fff;
+      background: linear-gradient(130deg, var(--brand), #ea7f2a);
+      box-shadow: 0 10px 18px rgba(200, 82, 31, 0.22);
+    }
+
+    .btn-secondary {
+      color: var(--brand-dark);
+      border-color: var(--brand-dark);
+      background: transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.99);
+    }
+
+    .secure-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-align: center;
+      margin-top: 0.35rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        position: static;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a href="../cart/cart.html" class="back-link">&larr; Kembali ke keranjang</a>
+    </div>
+
+    <section class="title">
+      <h1>Checkout Pesanan</h1>
+      <p class="subtitle">Lengkapi data pengiriman dan pilih metode pembayaran.</p>
+    </section>
+
+    <main class="layout">
+      <form class="panel checkout-form">
+        <section class="section">
+          <h2>Data Penerima</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="name">Nama Lengkap</label>
+              <input id="name" type="text" placeholder="Contoh: Budi Santoso">
+            </div>
+            <div class="field">
+              <label for="phone">Nomor HP</label>
+              <input id="phone" type="tel" placeholder="08xxxxxxxxxx">
+            </div>
+            <div class="field full">
+              <label for="address">Alamat Pengiriman</label>
+              <textarea id="address" placeholder="Masukkan alamat lengkap, patokan, dan nomor rumah"></textarea>
+            </div>
+            <div class="field">
+              <label for="delivery">Metode Pengiriman</label>
+              <select id="delivery">
+                <option>Delivery Reguler (30-45 menit)</option>
+                <option>Delivery Express (20-30 menit)</option>
+                <option>Ambil di Tempat</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="note">Catatan Pesanan</label>
+              <input id="note" type="text" placeholder="Contoh: sambal dipisah">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Pembayaran</h2>
+          <label class="payment-option">
+            <input type="radio" name="payment" checked>
+            <span>QRIS</span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payment">
+            <span>Transfer Bank</span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payment">
+            <span>Cash on Delivery (COD)</span>
+          </label>
+        </section>
+      </form>
+
+      <aside class="panel summary">
+        <h2>Ringkasan Pembayaran</h2>
+        <div class="order-item"><span>1x Nasi Goreng Spesial</span><strong>Rp28.000</strong></div>
+        <div class="order-item"><span>2x Es Teh Lemon</span><strong>Rp20.000</strong></div>
+        <div class="row"><span>Subtotal</span><strong>Rp48.000</strong></div>
+        <div class="row"><span>Biaya layanan</span><strong>Rp2.000</strong></div>
+        <div class="row"><span>Ongkir</span><strong>Rp5.000</strong></div>
+        <div class="row"><span>Diskon</span><strong>- Rp3.000</strong></div>
+        <div class="row total"><span>Total Bayar</span><strong>Rp52.000</strong></div>
+
+        <div class="eta">Estimasi tiba: <strong>30-45 menit</strong></div>
+
+        <a href="./success.html" class="btn btn-main">Konfirmasi Pesanan</a>
+        <a href="../cart/cart.html" class="btn btn-secondary">Ubah Keranjang</a>
+        <p class="secure-note">Pembayaran aman dan data Anda dilindungi.</p>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>
