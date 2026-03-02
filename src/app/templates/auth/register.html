@@ -3,12 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
   <title>Registrasi - Aplikasi Pemesanan Makanan</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
 </head>
 <body>
   <main class="auth-page">
     <section class="auth-card">
+      <img class="auth-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
       <h1>Daftar Akun</h1>
       <p class="subtitle">Buat akun baru untuk mulai memesan makanan.</p>
 
