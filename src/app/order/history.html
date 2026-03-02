@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Riwayat Pesanan | Food Hall</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --surface: #fff9f1;
+      --text: #1f1a14;
+      --muted: #6d6357;
+      --line: #e7d8c8;
+      --brand: #c8521f;
+      --brand-dark: #8d3312;
+      --soft: #fff3e6;
+      --ok-bg: #eefcf1;
+      --ok-text: #1f7a33;
+      --progress-bg: #fff5df;
+      --progress-text: #9a640a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% -20%, #ffe5bd 0%, transparent 45%),
+        radial-gradient(circle at 90% -25%, #ffd7c5 0%, transparent 43%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1000px, 92%);
+      margin: 0 auto;
+      padding-bottom: 2rem;
+    }
+
+    .topbar {
+      padding: 1rem 0 0.6rem;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--brand-dark);
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .title {
+      padding: 0.5rem 0 1.2rem;
+    }
+
+    h1 {
+      font-size: clamp(1.45rem, 2.2vw, 2rem);
+      line-height: 1.2;
+      color: #2b2118;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.9rem;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.46rem 0.9rem;
+      font-size: 0.86rem;
+      color: #584a3d;
+      background: #fffdf8;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .orders {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .order-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(81, 56, 34, 0.07);
+      padding: 1rem;
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .order-id {
+      font-weight: 800;
+      color: #2a2118;
+    }
+
+    .date {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 0.2rem;
+    }
+
+    .status {
+      border-radius: 999px;
+      padding: 0.28rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .status.done {
+      background: var(--ok-bg);
+      color: var(--ok-text);
+    }
+
+    .status.process {
+      background: var(--progress-bg);
+      color: var(--progress-text);
+    }
+
+    .items {
+      border: 1px dashed #dbcab8;
+      border-radius: 10px;
+      padding: 0.7rem;
+      background: #fffdf8;
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.8rem;
+      color: #4e4135;
+      font-size: 0.9rem;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      padding-top: 0.2rem;
+    }
+
+    .total {
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .total strong {
+      color: #2a2118;
+      font-size: 1rem;
+      margin-left: 0.25rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border-radius: 10px;
+      padding: 0.56rem 0.82rem;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.86rem;
+    }
+
+    .btn-main {
+      color: #fff;
+      background: linear-gradient(130deg, var(--brand), #ea7f2a);
+      box-shadow: 0 10px 18px rgba(200, 82, 31, 0.2);
+    }
+
+    .btn-secondary {
+      color: var(--brand-dark);
+      border-color: var(--brand-dark);
+      background: transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.99);
+    }
+
+    @media (max-width: 700px) {
+      .actions,
+      .btn {
+        width: 100%;
+      }
+
+      .btn {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a href="../menu/catalog.html" class="back-link">&larr; Kembali ke menu</a>
+    </div>
+
+    <section class="title">
+      <h1>Riwayat Pesanan</h1>
+      <p class="subtitle">Pantau status dan lihat detail pesanan Anda sebelumnya.</p>
+    </section>
+
+    <section class="tabs">
+      <span class="tab active">Semua</span>
+      <span class="tab">Diproses</span>
+      <span class="tab">Selesai</span>
+      <span class="tab">Dibatalkan</span>
+    </section>
+
+    <main class="orders">
+      <article class="order-card">
+        <div class="head">
+          <div>
+            <p class="order-id">Order #FH-2026-0119</p>
+            <p class="date">28 Februari 2026, 19:42</p>
+          </div>
+          <span class="status process">Diproses</span>
+        </div>
+
+        <div class="items">
+          <div class="item-row"><span>1x Nasi Goreng Spesial</span><strong>Rp28.000</strong></div>
+          <div class="item-row"><span>1x Ayam Geprek Mozza</span><strong>Rp25.000</strong></div>
+          <div class="item-row"><span>2x Es Teh Lemon</span><strong>Rp20.000</strong></div>
+        </div>
+
+        <div class="meta">
+          <p class="total">Total Bayar <strong>Rp73.000</strong></p>
+          <div class="actions">
+            <a href="./success.html" class="btn btn-main">Lihat Detail</a>
+            <a href="../cart/cart.html" class="btn btn-secondary">Pesan Lagi</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="order-card">
+        <div class="head">
+          <div>
+            <p class="order-id">Order #FH-2026-0112</p>
+            <p class="date">26 Februari 2026, 12:10</p>
+          </div>
+          <span class="status done">Selesai</span>
+        </div>
+
+        <div class="items">
+          <div class="item-row"><span>2x Mie Goreng Seafood</span><strong>Rp54.000</strong></div>
+          <div class="item-row"><span>1x Jus Alpukat</span><strong>Rp14.000</strong></div>
+        </div>
+
+        <div class="meta">
+          <p class="total">Total Bayar <strong>Rp68.000</strong></p>
+          <div class="actions">
+            <a href="./success.html" class="btn btn-main">Lihat Detail</a>
+            <a href="../cart/cart.html" class="btn btn-secondary">Pesan Lagi</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="order-card">
+        <div class="head">
+          <div>
+            <p class="order-id">Order #FH-2026-0108</p>
+            <p class="date">24 Februari 2026, 18:05</p>
+          </div>
+          <span class="status done">Selesai</span>
+        </div>
+
+        <div class="items">
+          <div class="item-row"><span>1x Nasi Ayam Bakar</span><strong>Rp30.000</strong></div>
+          <div class="item-row"><span>1x Tahu Crispy</span><strong>Rp12.000</strong></div>
+          <div class="item-row"><span>1x Teh Tarik</span><strong>Rp10.000</strong></div>
+        </div>
+
+        <div class="meta">
+          <p class="total">Total Bayar <strong>Rp52.000</strong></p>
+          <div class="actions">
+            <a href="./success.html" class="btn btn-main">Lihat Detail</a>
+            <a href="../cart/cart.html" class="btn btn-secondary">Pesan Lagi</a>
+          </div>
+        </div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

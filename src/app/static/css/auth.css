@@ -75,8 +75,15 @@ body {
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.9rem;
+<<<<<<< HEAD
   position: relative;
   padding-right: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+ 
 }
 
 .flash-success {
@@ -92,6 +99,16 @@ body {
 .flash-message {
   background: #f1f5f9;
   color: var(--text-main);
+}
+
+.flash-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0 2px;
 }
 
 .auth-form {
@@ -134,6 +151,11 @@ body {
 
 .auth-form button:hover {
   background: var(--primary-hover);
+}
+
+.auth-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .switch-link {

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Edit Menu</h1>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Form Edit Menu</h2>
+            <p>ID Menu: {{ menu_id if menu_id is defined else "-" }}</p>
+            <form method="post">
+                <p>
+                    <label for="name">Nama Menu</label><br>
+                    <input type="text" id="name" name="name" value="{{ menu.name if menu is defined else '' }}" placeholder="Contoh: Nasi Goreng Spesial" required>
+                </p>
+                <p>
+                    <label for="category_id">Kategori</label><br>
+                    <select id="category_id" name="category_id" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        {% if categories is defined and categories %}
+                            {% for category in categories %}
+                                <option
+                                    value="{{ category.id }}"
+                                    {% if menu is defined and menu.category_id == category.id %}selected{% endif %}
+                                >
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </p>
+                <p>
+                    <label for="price">Harga</label><br>
+                    <input type="number" id="price" name="price" min="0" step="0.01" value="{{ menu.price if menu is defined else '' }}" required>
+                </p>
+                <p>
+                    <label for="description">Deskripsi</label><br>
+                    <textarea id="description" name="description" rows="4">{{ menu.description if menu is defined else '' }}</textarea>
+                </p>
+                <p>
+                    <label for="image_url">URL Gambar</label><br>
+                    <input type="url" id="image_url" name="image_url" value="{{ menu.image_url if menu is defined else '' }}">
+                </p>
+                <p>
+                    <label>
+                        <input type="checkbox" name="is_available" value="1" {% if menu is not defined or menu.is_available %}checked{% endif %}>
+                        Tersedia
+                    </label>
+                </p>
+                <p>
+                    <button type="submit">Update Menu</button>
+                    <a href="{{ url_for('admin.menu_list') }}">Batal</a>
+                </p>
+            </form>
+        </section>
+
+        <section>
+            <h2>Informasi Menu Saat Ini</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Nama</td>
+                        <td>{{ menu.name if menu is defined else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Kategori</td>
+                        <td>{{ menu.category.name if menu is defined and menu.category is defined and menu.category else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Harga</td>
+                        <td>Rp {{ menu.price if menu is defined else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Status</td>
+                        <td>{% if menu is defined and menu.is_available %}Tersedia{% else %}Tidak Tersedia{% endif %}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

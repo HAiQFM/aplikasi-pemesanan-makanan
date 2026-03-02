@@ -20,52 +20,39 @@
     <main>
         <section>
             <h2>Tambah Kategori</h2>
-            <form method="post" action="{{ url_for('admin.categories') }}">
+            <form method="post">
                 <p>
                     <label for="name">Nama Kategori</label><br>
-                    <input type="text" id="name" name="name" placeholder="Contoh: Makanan Berat" required>
+                    <input type="text" id="name" name="name" required>
                 </p>
                 <p>
                     <label for="description">Deskripsi</label><br>
-                    <textarea id="description" name="description" rows="3" placeholder="Deskripsi singkat kategori"></textarea>
+                    <textarea id="description" name="description" rows="3"></textarea>
                 </p>
                 <p>
-                    <button type="submit">Simpan Kategori</button>
+                    <button type="submit">Simpan</button>
                 </p>
             </form>
         </section>
 
         <section>
             <h2>Daftar Kategori</h2>
-            <table>
+            <table border="1" cellpadding="8" cellspacing="0">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Nama</th>
                         <th>Deskripsi</th>
-                        <th>Jumlah Menu</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% if categories is defined and categories %}
-                        {% for category in categories %}
-                            <tr>
-                                <td>{{ category.id }}</td>
-                                <td>{{ category.name }}</td>
-                                <td>{{ category.description or '-' }}</td>
-                                <td>{{ category.menus|length if category.menus is defined else 0 }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="4">Belum ada data kategori.</td>
-                        </tr>
-                    {% endif %}
+                    <tr>
+                        <td colspan="3">Belum ada data kategori.</td>
+                    </tr>
                 </tbody>
             </table>
         </section>
-    </main>
-
+</main>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>

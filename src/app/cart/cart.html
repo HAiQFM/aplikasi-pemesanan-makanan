@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keranjang | Food Hall</title>
+  <style>
+    :root {
+      --bg: #f4efe8;
+      --surface: #fff9f1;
+      --text: #1f1a14;
+      --muted: #6d6357;
+      --line: #e7d8c8;
+      --brand: #c8521f;
+      --brand-dark: #8d3312;
+      --soft: #fff3e6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% -20%, #ffe5bd 0%, transparent 45%),
+        radial-gradient(circle at 90% -25%, #ffd7c5 0%, transparent 43%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      padding: 1rem 0 0.6rem;
+    }
+
+    .back-link {
+      text-decoration: none;
+      color: var(--brand-dark);
+      font-weight: 700;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .title {
+      padding: 0.5rem 0 1.2rem;
+    }
+
+    h1 {
+      font-size: clamp(1.45rem, 2.2vw, 2rem);
+      line-height: 1.2;
+      color: #2b2118;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1rem;
+      padding-bottom: 2rem;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 10px 20px rgba(81, 56, 34, 0.07);
+    }
+
+    .items {
+      overflow: hidden;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 0.9rem;
+      align-items: center;
+      padding: 0.9rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .item:last-child {
+      border-bottom: 0;
+    }
+
+    .thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f7b36b, #df6225);
+      flex-shrink: 0;
+    }
+
+    .item-name {
+      font-weight: 800;
+      font-size: 1rem;
+      color: #2a2118;
+      margin-bottom: 0.2rem;
+    }
+
+    .item-note {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .qty {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      background: #fffdf8;
+    }
+
+    .qty button {
+      border: 0;
+      background: transparent;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--brand-dark);
+      font-size: 1rem;
+    }
+
+    .qty span {
+      min-width: 34px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .price {
+      text-align: right;
+      font-weight: 800;
+      color: var(--brand-dark);
+      font-size: 0.95rem;
+      min-width: 95px;
+    }
+
+    .summary {
+      padding: 1rem;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .summary h2 {
+      font-size: 1.05rem;
+      color: #2a2118;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+
+    .row.total {
+      border-top: 1px dashed var(--line);
+      padding-top: 0.7rem;
+      color: #2a2118;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .promo {
+      border: 1px solid #f0d6bf;
+      background: var(--soft);
+      border-radius: 10px;
+      padding: 0.65rem 0.75rem;
+      color: #74553c;
+      font-size: 0.86rem;
+    }
+
+    .actions {
+      display: grid;
+      gap: 0.55rem;
+      margin-top: 0.4rem;
+    }
+
+    .btn {
+      border-radius: 10px;
+      padding: 0.66rem 0.9rem;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 700;
+      transition: 0.2s ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.92rem;
+    }
+
+    .btn-main {
+      color: #fff;
+      background: linear-gradient(130deg, var(--brand), #ea7f2a);
+      box-shadow: 0 10px 18px rgba(200, 82, 31, 0.22);
+    }
+
+    .btn-secondary {
+      color: var(--brand-dark);
+      border-color: var(--brand-dark);
+      background: transparent;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.99);
+    }
+
+    .empty-note {
+      padding: 0.95rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+      background: #fffdf8;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .item {
+        grid-template-columns: auto 1fr;
+      }
+
+      .qty,
+      .price {
+        grid-column: 2 / 3;
+      }
+
+      .price {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <a href="../menu/catalog.html" class="back-link">&larr; Lanjut pilih menu</a>
+    </div>
+
+    <section class="title">
+      <h1>Keranjang Belanja</h1>
+      <p class="subtitle">Periksa item pesanan sebelum lanjut ke checkout.</p>
+    </section>
+
+    <main class="layout">
+      <section class="panel items">
+        <article class="item" data-unit-price="28000">
+          <div class="thumb"></div>
+          <div>
+            <h3 class="item-name">Nasi Goreng Spesial</h3>
+            <p class="item-note">acar, ekstra telur</p>
+          </div>
+          <div class="qty">
+            <button type="button" data-action="decrease" aria-label="Kurangi jumlah">-</button>
+            <span data-qty>1</span>
+            <button type="button" data-action="increase" aria-label="Tambah jumlah">+</button>
+          </div>
+          <div class="price" data-line-price>Rp28.000</div>
+        </article>
+
+        <article class="item" data-unit-price="10000">
+          <div class="thumb"></div>
+          <div>
+            <h3 class="item-name">Es Teh Lemon</h3>
+            <p class="item-note">Less sugar</p>
+          </div>
+          <div class="qty">
+            <button type="button" data-action="decrease" aria-label="Kurangi jumlah">-</button>
+            <span data-qty>2</span>
+            <button type="button" data-action="increase" aria-label="Tambah jumlah">+</button>
+          </div>
+          <div class="price" data-line-price>Rp20.000</div>
+        </article>
+
+        <p class="empty-note">Ingin tambah menu lain? Klik "Lanjut pilih menu".</p>
+      </section>
+
+      <aside class="panel summary">
+        <h2>Ringkasan Pesanan</h2>
+        <div class="row"><span>Subtotal</span><strong id="subtotal-value">Rp48.000</strong></div>
+        <div class="row"><span>Biaya layanan</span><strong id="service-fee-value" data-fee="2000">Rp2.000</strong></div>
+        <div class="row"><span>Diskon</span><strong id="discount-value" data-discount="3000">- Rp3.000</strong></div>
+        <div class="row total"><span>Total</span><strong id="total-value">Rp47.000</strong></div>
+
+        <div class="promo">Gunakan kode <strong>HEMAT10</strong> untuk diskon tambahan.</div>
+
+        <div class="actions">
+          <a href="../order/checkout.html" class="btn btn-main">Lanjut ke Checkout</a>
+          <a href="../menu/catalog.html" class="btn btn-secondary">Tambah Menu Lagi</a>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <script src="../static/js/cart.js"></script>
+</body>
+</html>
