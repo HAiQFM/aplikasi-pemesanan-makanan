@@ -1,16 +1,16 @@
 :root {
-  --bg-start: #fff8ef;
-  --bg-end: #ffe3c4;
+  --bg-start: #e9f8ec;
+  --bg-end: #f8fff9;
   --card-bg: #ffffff;
-  --text-main: #1f2937;
-  --text-sub: #6b7280;
-  --primary: #ea580c;
-  --primary-hover: #c2410c;
-  --border: #e5e7eb;
-  --success-bg: #ecfdf3;
-  --success-text: #166534;
-  --info-bg: #eff6ff;
-  --info-text: #1d4ed8;
+  --text-main: #0b2e20;
+  --text-sub: #4d6b5e;
+  --primary: #148146;
+  --primary-hover: #0f6a39;
+  --border: #cfe8d2;
+  --success-bg: #dcfce7;
+  --success-text: #14532d;
+  --info-bg: #e8f5ea;
+  --info-text: #166534;
 }
 
 * {
@@ -19,9 +19,9 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Nunito", "Segoe UI", sans-serif;
   color: var(--text-main);
-  background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+  background: radial-gradient(circle at top left, #c7edcf 0%, var(--bg-end) 48%);
   min-height: 100vh;
 }
 
@@ -38,13 +38,24 @@ body {
   max-width: 440px;
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 24px;
   padding: 28px;
-  box-shadow: 0 14px 30px rgba(31, 41, 55, 0.12);
+  box-shadow: 0 16px 32px rgba(14, 82, 45, 0.16);
+  animation: cardIn 0.5s ease both;
+}
+
+.auth-logo {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #f3fff6;
+  padding: 8px;
+  border: 1px solid var(--border);
 }
 
 .auth-card h1 {
-  margin: 0 0 8px;
+  margin: 12px 0 8px;
   font-size: 1.7rem;
 }
 
@@ -64,10 +75,15 @@ body {
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.9rem;
+<<<<<<< HEAD
+  position: relative;
+  padding-right: 34px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+ 
 }
 
 .flash-success {
@@ -109,21 +125,22 @@ body {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 999px;
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #f7fff8;
 }
 
 .auth-form input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
+  box-shadow: 0 0 0 3px rgba(20, 129, 70, 0.2);
 }
 
 .auth-form button {
   margin-top: 8px;
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 12px;
   background: var(--primary);
   color: #fff;
@@ -155,6 +172,28 @@ body {
 
 .switch-link a:hover {
   text-decoration: underline;
+}
+
+.flash-close {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 480px) {

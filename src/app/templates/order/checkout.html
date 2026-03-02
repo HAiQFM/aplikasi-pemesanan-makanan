@@ -3,39 +3,202 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
   <title>Checkout - Aplikasi Pemesanan Makanan</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #f8fafc; color: #0f172a; }
-    .container { max-width: 680px; margin: 40px auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
-    h1 { margin-top: 0; }
-    .desc { color: #475569; margin-bottom: 20px; }
-    form { display: grid; gap: 12px; }
-    label { font-weight: 600; font-size: 14px; }
-    input, select, textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; }
-    textarea { min-height: 90px; resize: vertical; }
-    button { border: 0; border-radius: 8px; padding: 12px; background: #0ea5e9; color: #fff; font-weight: 700; cursor: pointer; }
-    button:hover { background: #0284c7; }
-    .links { margin-top: 16px; }
-    .links a { color: #0369a1; text-decoration: none; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Nunito", "Segoe UI", sans-serif;
+      background: linear-gradient(140deg, #cfd7d4, #e6ece9);
+      color: #0b2e20;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px 12px;
+    }
+    .phone-shell {
+      width: min(100%, 390px);
+      background: #ffffff;
+      border-radius: 30px;
+      padding: 16px;
+      box-shadow: 0 20px 36px rgba(16, 40, 28, 0.2);
+      border: 1px solid #dce6df;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .topbar a {
+      color: #0f6a39;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+    .title {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+    .cart-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .cart-item {
+      background: #f8fcf9;
+      border: 1px solid #dcefe1;
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .item-name {
+      margin: 0;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+    .item-price {
+      margin: 2px 0 0;
+      color: #148146;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .qty {
+      background: #148146;
+      color: #fff;
+      border-radius: 999px;
+      min-width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .promo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fcf9;
+      border: 1px solid #dcefe1;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    .promo span:last-child {
+      color: #148146;
+      font-weight: 800;
+    }
+    .summary {
+      background: #f8fcf9;
+      border: 1px solid #dcefe1;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+      color: #4d6b5e;
+      font-size: 0.9rem;
+    }
+    .summary-row.total {
+      color: #0b2e20;
+      font-weight: 800;
+      font-size: 1rem;
+      margin-top: 8px;
+    }
+    .desc {
+      margin: 0 0 10px;
+      color: #4d6b5e;
+      font-size: 0.9rem;
+    }
+    form { display: grid; gap: 10px; }
+    label { font-weight: 700; font-size: 0.86rem; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #cfe8d2;
+      border-radius: 999px;
+      padding: 10px 12px;
+      background: #f7fff8;
+      color: #0b2e20;
+      font: inherit;
+    }
+    textarea { min-height: 86px; border-radius: 14px; resize: vertical; }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px;
+      background: #65c675;
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+    button:hover { background: #53b765; }
+    .links { margin: 10px 0 2px; text-align: center; }
+    .links a { color: #0f6a39; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
     .links a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <main class="container">
-    <h1>Checkout</h1>
-    <p class="desc">Lengkapi detail pengiriman lalu konfirmasi pesanan.</p>
+  <main class="phone-shell">
+    <div class="topbar">
+      <a href="{{ url_for('main.index') }}" aria-label="Kembali">&#8592;</a>
+      <h1 class="title">Checkout</h1>
+      <span aria-hidden="true">&#128722;</span>
+    </div>
 
+    <section class="cart-list" aria-label="Ringkasan keranjang">
+      <article class="cart-item">
+        
+        
+      </article>
+      <article class="cart-item">
+        <div>
+          <p class="item-name"></p>
+          <p class="item-price"></p>
+        </div>
+     
+      </article>
+      <article class="cart-item">
+        <div>
+          <p class="item-name">Es Teh Manis</p>
+          <p class="item-price">Rp 6.000</p>
+        </div>
+        <span class="qty">1x</span>
+      </article>
+    </section>
+
+    <div class="promo">
+      <span>Promo code</span>
+      <span>Apply</span>
+    </div>
+
+    <section class="summary" aria-label="Total biaya">
+      <div class="summary-row"><span>Subtotal</span><span>Rp 0</span></div>
+      <div class="summary-row"><span>Delivery</span><span>Rp 0</span></div>
+      <div class="summary-row total"><span>Total</span><span>Rp 0</span></div>
+    </section>
+
+    <p class="desc">Lengkapi detail pengiriman lalu konfirmasi pesanan.</p>
     <form method="post" action="{{ url_for('order.checkout') }}">
       <div>
         <label for="customer_name">Nama Penerima</label>
         <input id="customer_name" name="customer_name" type="text" placeholder="Nama lengkap" required />
       </div>
-
       <div>
         <label for="address">Alamat Pengiriman</label>
         <textarea id="address" name="address" placeholder="Masukkan alamat lengkap" required></textarea>
       </div>
-
       <div>
         <label for="payment_method">Metode Pembayaran</label>
         <select id="payment_method" name="payment_method" required>
@@ -45,8 +208,7 @@
           <option value="ewallet">E-Wallet</option>
         </select>
       </div>
-
-      <button type="submit">Buat Pesanan</button>
+      <button type="submit">Checkout</button>
     </form>
 
     <p class="links"><a href="{{ url_for('order.history') }}">Lihat riwayat pesanan</a></p>

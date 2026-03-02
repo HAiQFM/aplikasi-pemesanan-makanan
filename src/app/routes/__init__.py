@@ -19,5 +19,6 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(auth_bp)
     app.register_blueprint(menu_bp)
     app.register_blueprint(cart_bp)
+    app.register_blueprint(menu_bp)
     app.register_blueprint(order_bp)
     app.register_blueprint(admin_bp)

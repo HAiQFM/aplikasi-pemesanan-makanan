@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
   <title>{% block title %}Aplikasi Pemesanan Makanan{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
   {% block head %}{% endblock %}
@@ -10,9 +13,13 @@
 <body>
   <header class="nav">
     <div class="nav-inner">
-      <a class="brand" href="{{ url_for('main.index') }}">FoodOrder</a>
+      <a class="brand" href="{{ url_for('main.index') }}">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
+        <span>Food Hall</span>
+      </a>
       <nav class="nav-links">
         <a href="{{ url_for('main.index') }}">Beranda</a>
+        <a href="{{ url_for('menu.index') }}">Menu</a>
         <a href="{{ url_for('order.checkout') }}">Checkout</a>
         <a href="{{ url_for('order.history') }}">Riwayat</a>
         <a href="{{ url_for('auth.login') }}">Login</a>

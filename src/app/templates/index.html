@@ -3,30 +3,66 @@
 {% block title %}Beranda - Aplikasi Pemesanan Makanan{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <h1>Selamat Datang di FoodOrder</h1>
-  <p>
-    Platform sederhana untuk memesan makanan dengan alur cepat: login, checkout, dan pantau riwayat pesanan.
-  </p>
-  <div class="hero-actions">
-    <a class="btn" href="{{ url_for('auth.login') }}">Masuk Akun</a>
-    <a class="btn" href="{{ url_for('auth.register') }}">Buat Akun</a>
-    <a class="btn" href="{{ url_for('order.checkout') }}">Mulai Checkout</a>
+<section class="hero-panel">
+  <div class="hero-copy">
+    <p class="eyebrow">Aplikasi Pemesanan Makanan</p>
+    <h1>Selamat Datang di Food Hall</h1>
+    <p class="hero-text">
+      Menghadirkan kelezatan ayam geprek pilihan dengan sambal ulek segar. Pesan mudah, antar cepat, rasa nikmat.
+    </p>
+    <div class="hero-actions">
+      <a class="btn" href="{{ url_for('auth.login') }}">Masuk Akun</a>
+      <a class="btn btn-soft" href="{{ url_for('auth.register') }}">Buat Akun</a>
+      <a class="btn btn-soft" href="{{ url_for('order.checkout') }}">Mulai Checkout</a>
+    </div>
+  </div>
+  <div class="hero-brand">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
   </div>
 </section>
 
-<section class="feature-grid">
-  <article class="feature-card">
-    <h2>Alur Ringkas</h2>
-    <p>Registrasi atau login, isi checkout, lalu sistem menampilkan status pesanan.</p>
+<section class="phone-grid">
+  <article class="phone-card splash-card">
+    <img class="card-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
+    <h2>Food Hall</h2>
+    <p>Kualitas segar langsung ke rumah Anda</p>
+    <a class="mini-btn" href="{{ url_for('auth.register') }}">Get Started</a>
   </article>
-  <article class="feature-card">
-    <h2>Status Pesanan</h2>
-    <p>Cek riwayat untuk melihat daftar pesanan yang sudah diproses.</p>
+
+  <article class="phone-card">
+    <h3>Food Hall Products</h3>
+    <p class="muted">Pilih produk lokal terbaik setiap hari</p>
+    <div class="chip-row">
+      <span class="chip">All</span>
+      <span class="chip">Vegetables</span>
+      <span class="chip">Fruits</span>
+    </div>
+    <div class="product-box">
+      <div>
+        
+      </div>
+      <a class="mini-btn" href="{{ url_for('order.checkout') }}">Tambah</a>
+    </div>
   </article>
-  <article class="feature-card">
-    <h2>Cepat dan Mudah</h2>
-    <p>Form sederhana agar pengguna bisa langsung menyelesaikan pemesanan.</p>
+
+  <article class="phone-card">
+    <h3>Keranjang</h3>
+    <ul class="cart-list">
+      
+    </ul>
+    <p class="total"></p>
+    <a class="mini-btn wide" href="{{ url_for('order.checkout') }}">Check Out</a>
+  </article>
+
+  <article class="phone-card">
+    <h3>Order Timeline</h3>
+    <ul class="timeline">
+      <li>Order Placed</li>
+      <li>Pending</li>
+      <li>Processing</li>
+      <li>Delivered</li>
+    </ul>
+    <a class="mini-btn wide" href="{{ url_for('order.history') }}">Lihat Riwayat</a>
   </article>
 </section>
 {% endblock %}
