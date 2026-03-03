@@ -10,28 +10,86 @@
     <header>
         <h1>Dashboard Admin</h1>
         <nav>
-            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a class="is-active" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
             <a href="{{ url_for('admin.categories') }}">Kategori</a>
             <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+            <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
+                <button type="submit" class="nav-logout">Logout Admin</button>
+            </form>
         </nav>
     </header>
 
-    <main>
-        <section>
-            <h2>Ringkasan</h2>
-            <p>Selamat datang di halaman admin aplikasi pemesanan makanan.</p>
+    <main class="dashboard-page">
+        <section class="dashboard-hero">
+            <p class="dashboard-eyebrow">Panel Kontrol</p>
+            <h2>Kelola Operasional Food Hall</h2>
+            <p>Monitor menu, kategori, dan pesanan pelanggan dari satu tempat.</p>
+            <div class="dashboard-hero-actions">
+                <a href="{{ url_for('admin.menu_add') }}">Tambah Menu</a>
+                <a href="{{ url_for('admin.orders') }}">Pantau Pesanan</a>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <p>Total Menu</p>
+                <strong>{{ total_menu if total_menu is defined else 0 }}</strong>
+            </article>
+            <article class="stat-card">
+                <p>Total Kategori</p>
+                <strong>{{ total_category if total_category is defined else 0 }}</strong>
+            </article>
+            <article class="stat-card">
+                <p>Total Pesanan</p>
+                <strong>{{ total_order if total_order is defined else 0 }}</strong>
+            </article>
+            <article class="stat-card">
+                <p>Pending</p>
+                <strong>{{ pending_order if pending_order is defined else 0 }}</strong>
+            </article>
         </section>
 
         <section>
             <h3>Aksi Cepat</h3>
-            <ul>
-                <li><a href="{{ url_for('admin.menu_add') }}">Tambah menu baru</a></li>
-                <li><a href="{{ url_for('admin.menu_list') }}">Lihat daftar menu</a></li>
-                <li><a href="{{ url_for('admin.orders') }}">Lihat pesanan</a></li>
-            </ul>
+            <div class="quick-links">
+                <a href="{{ url_for('admin.menu_add') }}">Tambah menu baru</a>
+                <a href="{{ url_for('admin.menu_list') }}">Lihat & edit daftar menu</a>
+                <a href="{{ url_for('admin.categories') }}">Kelola kategori</a>
+                <a href="{{ url_for('admin.orders') }}">Lihat pesanan terbaru</a>
+            </div>
         </section>
-</main>
+
+        <section>
+            <h3>Pesanan Terbaru</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Pesanan</th>
+                        <th>Pelanggan</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_orders is defined and recent_orders %}
+                        {% for order in recent_orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.customer_name if order.customer_name else 'Pelanggan' }}</td>
+                                <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
+                                <td>{{ order.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4">Belum ada data pesanan terbaru.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+    </main>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>

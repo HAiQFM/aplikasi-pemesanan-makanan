@@ -1,11 +1,27 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+
+from app.services.order_store import STATUS_LABELS, delete_order, get_order, list_orders, update_order
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+@admin_bp.before_request
+def require_admin():
+    if session.get("user_role") != "admin":
+        flash("Akses admin hanya untuk akun admin.", "error")
+        return redirect(url_for("auth.login"))
+
+
 @admin_bp.route("/", methods=["GET"])
 def dashboard():
-    return render_template("admin/dashboard.html")
+    orders = list_orders()
+    pending_payment_count = sum(1 for order in orders if order.get("status") == "Menunggu Pembayaran")
+    return render_template(
+        "admin/dashboard.html",
+        total_order=len(orders),
+        pending_order=pending_payment_count,
+        recent_orders=orders[:5],
+    )
 
 
 @admin_bp.route("/menus", methods=["GET"])
@@ -42,4 +58,56 @@ def categories():
 
 @admin_bp.route("/orders", methods=["GET"])
 def orders():
-    return render_template("admin/orders.html")
+    all_orders = list_orders()
+    return render_template("admin/orders.html", orders=all_orders)
+
+
+@admin_bp.route("/orders/<int:order_id>/verify-payment", methods=["POST"])
+def verify_payment(order_id: int):
+    order = get_order(order_id)
+    if not order:
+        flash("Pesanan tidak ditemukan.", "error")
+        return redirect(url_for("admin.orders"))
+
+    if order.get("payment_method") not in {"transfer", "ewallet"}:
+        flash("Verifikasi pembayaran hanya untuk transfer/e-wallet.", "error")
+        return redirect(url_for("admin.orders"))
+
+    if not order.get("payment_proof_path"):
+        flash("Bukti pembayaran belum diunggah oleh pembeli.", "error")
+        return redirect(url_for("admin.orders"))
+
+    updated_status = order.get("status")
+    if updated_status == "Menunggu Pembayaran":
+        updated_status = "Sedang Dimasak"
+
+    update_order(order_id, payment_verification="verified", status=updated_status)
+    flash(f"Pembayaran pesanan #{order_id} berhasil diverifikasi.", "success")
+    return redirect(url_for("admin.orders"))
+
+
+@admin_bp.route("/orders/<int:order_id>/status", methods=["POST"])
+def update_order_status(order_id: int):
+    status = request.form.get("status", "").strip()
+    if status not in STATUS_LABELS:
+        flash("Status pesanan tidak valid.", "error")
+        return redirect(url_for("admin.orders"))
+
+    order = get_order(order_id)
+    if not order:
+        flash("Pesanan tidak ditemukan.", "error")
+        return redirect(url_for("admin.orders"))
+
+    update_order(order_id, status=status)
+    flash(f"Status pesanan #{order_id} diperbarui menjadi {status}.", "success")
+    return redirect(url_for("admin.orders"))
+
+
+@admin_bp.route("/orders/<int:order_id>/delete", methods=["POST"])
+def order_delete(order_id: int):
+    deleted = delete_order(order_id)
+    if not deleted:
+        flash("Pesanan tidak ditemukan atau sudah dihapus.", "error")
+        return redirect(url_for("admin.orders"))
+    flash(f"Pesanan #{order_id} berhasil dihapus.", "info")
+    return redirect(url_for("admin.orders"))
