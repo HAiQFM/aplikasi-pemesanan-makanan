@@ -1,17 +1,20 @@
-from flask import Blueprint, Flask, render_template
+from flask import Blueprint, Flask, render_template, session
 
 from app.routes.admin import admin_bp
 from app.routes.auth import auth_bp
 from app.routes.cart import cart_bp
 from app.routes.menu import menu_bp
 from app.routes.order import order_bp
+from app.services.order_store import STATUS_LABELS, status_counts
 
 main_bp = Blueprint("main", __name__)
 
 
 @main_bp.route("/")
 def index():
-    return render_template("index.html")
+    user_email = session.get("user_email", "").strip().lower() if session.get("is_logged_in") else ""
+    counts = status_counts(customer_email=user_email) if user_email else {label: 0 for label in STATUS_LABELS}
+    return render_template("index.html", status_counts=counts, status_total=sum(counts.values()))
 
 
 def register_blueprints(app: Flask) -> None:
@@ -19,6 +22,5 @@ def register_blueprints(app: Flask) -> None:
     app.register_blueprint(auth_bp)
     app.register_blueprint(menu_bp)
     app.register_blueprint(cart_bp)
-    app.register_blueprint(menu_bp)
     app.register_blueprint(order_bp)
     app.register_blueprint(admin_bp)
