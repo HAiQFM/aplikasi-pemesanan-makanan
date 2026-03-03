@@ -12,6 +12,9 @@
 <body>
   <main class="auth-page">
     <section class="auth-card">
+      <div class="auth-topbar">
+        <a class="auth-back" href="{{ url_for('main.index') }}" aria-label="Kembali">&#8592;</a>
+      </div>
       <img class="auth-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
       <h1>Daftar Akun</h1>
       <p class="subtitle">Buat akun baru untuk mulai memesan makanan.</p>
@@ -48,3 +51,4 @@
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
+

@@ -81,6 +81,30 @@
       font-weight: 700;
       font-size: 0.8rem;
     }
+    .checkout-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .trash-btn {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #dcefe1;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #4d6b5e;
+      cursor: pointer;
+      font-size: 0.75rem;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+    .trash-btn:hover {
+      background: #fff1f1;
+      border-color: #f1c8c8;
+      color: #b42318;
+    }
     .promo {
       display: flex;
       justify-content: space-between;
@@ -91,6 +115,119 @@
       padding: 10px 12px;
       margin-bottom: 12px;
       font-size: 0.9rem;
+    }
+    .promo button {
+      border: 0;
+      background: transparent;
+      color: #148146;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 0;
+      font: inherit;
+    }
+    .promo button:hover {
+      text-decoration: underline;
+    }
+    .promo-modal {
+      background: #f2f4f3;
+      border: 1px solid #cfd8d2;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .promo-modal-top {
+      padding: 14px 14px 10px;
+    }
+    .promo-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .promo-head strong {
+      font-size: 1.1rem;
+    }
+    .promo-close {
+      border: 0;
+      background: transparent;
+      color: #29323d;
+      font-size: 1.25rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+    .promo-label {
+      display: block;
+      color: #5c6671;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+    .promo-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .promo-input-wrap {
+      position: relative;
+    }
+    .promo-input-wrap input {
+      border-radius: 10px;
+      border: 1px solid #14a252;
+      background: #ffffff;
+      padding-right: 34px;
+      text-transform: uppercase;
+    }
+    .promo-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      border: 0;
+      border-radius: 999px;
+      background: #2f3a45;
+      color: #fff;
+      font-size: 0.75rem;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    .promo-apply {
+      border: 0;
+      border-radius: 12px;
+      background: #0cab59;
+      color: #fff;
+      font-weight: 800;
+      padding: 11px 18px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .promo-modal-bottom {
+      border-top: 1px solid #cfd8d2;
+      padding: 12px 14px 14px;
+    }
+    .promo-message {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .promo-message.error {
+      color: #b42318;
+    }
+    .promo-message.success {
+      color: #0f6a39;
+    }
+    .promo-back {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: #0cab59;
+      color: #fff;
+      font-weight: 800;
+      padding: 12px;
+      cursor: pointer;
     }
     .promo span:last-child {
       color: #148146;
@@ -147,6 +284,24 @@
     .links { margin: 10px 0 2px; text-align: center; }
     .links a { color: #0f6a39; text-decoration: none; font-weight: 700; font-size: 0.9rem; }
     .links a:hover { text-decoration: underline; }
+    .payment-info {
+      margin-top: 6px;
+      background: #f3fbf4;
+      border: 1px solid #cfe8d2;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      color: #1d5138;
+    }
+    .payment-info strong {
+      color: #0f6a39;
+      letter-spacing: 0.2px;
+    }
+    .proof-note {
+      margin: 6px 0 0;
+      color: #4d6b5e;
+      font-size: 0.82rem;
+    }
   </style>
 </head>
 <body>
@@ -157,43 +312,45 @@
       <span aria-hidden="true">&#128722;</span>
     </div>
 
-    <section class="cart-list" aria-label="Ringkasan keranjang">
-      <article class="cart-item">
-        
-        
-      </article>
-      <article class="cart-item">
-        <div>
-          <p class="item-name"></p>
-          <p class="item-price"></p>
-        </div>
-     
-      </article>
-      <article class="cart-item">
-        <div>
-          <p class="item-name">Es Teh Manis</p>
-          <p class="item-price">Rp 6.000</p>
-        </div>
-        <span class="qty">1x</span>
-      </article>
-    </section>
+    <section class="cart-list" aria-label="Ringkasan keranjang" data-role="checkout-cart-list"></section>
 
     <div class="promo">
       <span>Promo code</span>
-      <span>Apply</span>
+      <button type="button" data-role="promo-open">Apply</button>
     </div>
+    <section class="promo-modal" data-role="promo-panel" hidden>
+      <div class="promo-modal-top">
+        <div class="promo-head">
+          <strong>Promo</strong>
+          <button type="button" class="promo-close" data-role="promo-close" aria-label="Tutup promo">&times;</button>
+        </div>
+        <label class="promo-label" for="promo_code">Masukkan kode promo</label>
+        <div class="promo-row">
+          <div class="promo-input-wrap">
+            <input id="promo_code" name="promo_code" type="text" placeholder="KODE" data-role="promo-input" />
+            <button type="button" class="promo-clear" data-role="promo-clear" aria-label="Hapus kode">&times;</button>
+          </div>
+          <button type="button" class="promo-apply" data-role="promo-apply">Terapkan</button>
+        </div>
+        <p class="promo-message" data-role="promo-message"></p>
+      </div>
+      <div class="promo-modal-bottom">
+        <button type="button" class="promo-back" data-role="promo-back">Balik</button>
+      </div>
+    </section>
 
     <section class="summary" aria-label="Total biaya">
-      <div class="summary-row"><span>Subtotal</span><span>Rp 0</span></div>
-      <div class="summary-row"><span>Delivery</span><span>Rp 0</span></div>
-      <div class="summary-row total"><span>Total</span><span>Rp 0</span></div>
+      <div class="summary-row"><span>Subtotal</span><span data-role="checkout-subtotal">Rp 0</span></div>
+      <div class="summary-row"><span>Delivery</span><span>Rp 12.000</span></div>
+      <div class="summary-row"><span>Discount</span><span data-role="checkout-discount">- Rp 0</span></div>
+      <div class="summary-row total"><span>Total</span><span data-role="checkout-total">Rp 0</span></div>
     </section>
 
     <p class="desc">Lengkapi detail pengiriman lalu konfirmasi pesanan.</p>
-    <form method="post" action="{{ url_for('order.checkout') }}">
+    <form method="post" action="{{ url_for('order.checkout') }}" enctype="multipart/form-data">
       <div>
         <label for="customer_name">Nama Penerima</label>
-        <input id="customer_name" name="customer_name" type="text" placeholder="Nama lengkap" required />
+        <input id="customer_name" name="customer_name" type="text" placeholder="Nama lengkap" value="{{ customer_name or '' }}" required />
       </div>
       <div>
         <label for="address">Alamat Pengiriman</label>
@@ -203,15 +360,68 @@
         <label for="payment_method">Metode Pembayaran</label>
         <select id="payment_method" name="payment_method" required>
           <option value="">Pilih metode</option>
-          <option value="cash">Cash</option>
+          <option value="cash">Cash / COD</option>
           <option value="transfer">Transfer Bank</option>
           <option value="ewallet">E-Wallet</option>
         </select>
       </div>
+      <div class="payment-info" id="payment_info" hidden>
+        <p id="payment_text" style="margin: 0;"></p>
+      </div>
+      <div id="proof_wrapper" hidden>
+        <label for="payment_proof">Bukti Pembayaran</label>
+        <input id="payment_proof" name="payment_proof" type="file" accept=".png,.jpg,.jpeg,.pdf" />
+        <p class="proof-note">Wajib upload untuk transfer bank / e-wallet. Format: PNG, JPG, JPEG, PDF.</p>
+      </div>
+      <input id="order_total" name="order_total" type="hidden" value="0" />
+      <input id="checkout_items" name="checkout_items" type="hidden" value="[]" />
       <button type="submit">Checkout</button>
     </form>
 
     <p class="links"><a href="{{ url_for('order.history') }}">Lihat riwayat pesanan</a></p>
   </main>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    (function () {
+      var paymentMethod = document.getElementById("payment_method");
+      var paymentInfo = document.getElementById("payment_info");
+      var paymentText = document.getElementById("payment_text");
+      var proofWrapper = document.getElementById("proof_wrapper");
+      var proofInput = document.getElementById("payment_proof");
+
+      function updatePaymentUI() {
+        var method = paymentMethod.value;
+        if (!method) {
+          paymentInfo.hidden = true;
+          proofWrapper.hidden = true;
+          proofInput.required = false;
+          paymentText.textContent = "";
+          return;
+        }
+
+        if (method === "cash") {
+          paymentInfo.hidden = false;
+          paymentText.innerHTML = "Pembayaran dilakukan saat pesanan sampai (COD).";
+          proofWrapper.hidden = true;
+          proofInput.required = false;
+          return;
+        }
+
+        paymentInfo.hidden = false;
+        proofWrapper.hidden = false;
+        proofInput.required = true;
+
+        if (method === "transfer") {
+          paymentText.innerHTML = "Transfer ke rekening: <strong>{{ transfer_account }}</strong>.";
+          return;
+        }
+
+        paymentText.innerHTML = "Bayar via e-wallet: <strong>{{ ewallet_account }}</strong>.";
+      }
+
+      paymentMethod.addEventListener("change", updatePaymentUI);
+      updatePaymentUI();
+    })();
+  </script>
 </body>
 </html>

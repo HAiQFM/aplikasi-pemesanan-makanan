@@ -44,6 +44,35 @@ body {
   animation: cardIn 0.5s ease both;
 }
 
+.auth-topbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 8px;
+}
+
+.auth-back {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #f7fff8;
+  color: var(--primary-hover);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.auth-back:hover {
+  background: #e9f8ec;
+}
+
+.auth-back:focus-visible {
+  outline: 2px solid rgba(20, 129, 70, 0.35);
+  outline-offset: 2px;
+}
+
 .auth-logo {
   width: 62px;
   height: 62px;
@@ -94,6 +123,31 @@ body {
 .flash-info {
   background: var(--info-bg);
   color: var(--info-text);
+}
+
+.flash-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  position: relative;
+  padding-left: 34px;
+}
+
+.flash-error::before {
+  content: "!";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
 }
 
 .flash-message {

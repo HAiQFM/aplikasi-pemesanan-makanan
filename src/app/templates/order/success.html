@@ -5,24 +5,155 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pesanan Berhasil - Aplikasi Pemesanan Makanan</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #ecfdf5; color: #064e3b; }
-    .container { max-width: 640px; margin: 60px auto; background: #fff; border: 1px solid #a7f3d0; border-radius: 12px; padding: 28px; text-align: center; }
-    h1 { margin-top: 0; }
-    .msg { margin-bottom: 20px; color: #065f46; }
-    ul { list-style: none; padding: 0; margin: 0 0 16px; }
-    li { background: #dcfce7; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-    a { color: #047857; text-decoration: none; font-weight: 600; }
-    a:hover { text-decoration: underline; }
+    :root {
+      --bg: #eef7ef;
+      --panel: #ffffff;
+      --line: #cfe8d2;
+      --text: #0d2d1f;
+      --muted: #3f6552;
+      --primary: #0f6a39;
+      --primary-soft: #e8f6eb;
+      --shadow: 0 18px 36px rgba(15, 106, 57, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      font-family: "Nunito", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 0% 0%, #d7f3dd 0%, rgba(215, 243, 221, 0) 42%),
+        radial-gradient(circle at 100% 100%, #ddf4e2 0%, rgba(221, 244, 226, 0) 38%),
+        var(--bg);
+    }
+    .container {
+      width: min(100%, 680px);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+    }
+    .status-icon {
+      width: 66px;
+      height: 66px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 2px solid #9ad8ab;
+      font-size: 2rem;
+      margin: 2px auto 14px;
+    }
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 1.6rem;
+    }
+    .msg {
+      margin: 10px 0 16px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .summary {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+    .summary li {
+      background: #f7fff8;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .summary li span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .flash-list {
+      list-style: none;
+      margin: 14px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+    .flash-list li {
+      background: #eaf7ee;
+      color: #165536;
+      border: 1px solid #cfe8d2;
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 0.92rem;
+    }
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #0d5e33; }
+    .btn-soft {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: #b8e2c3;
+    }
+    .btn-soft:hover { background: #dcf2e2; }
   </style>
 </head>
 <body>
   <main class="container">
+    <div class="status-icon">&#10003;</div>
     <h1>Pesanan Berhasil Dibuat</h1>
-    <p class="msg">Terima kasih, pesanan Anda sedang diproses.</p>
+    <p class="msg">Terima kasih, pesanan Anda sudah tercatat.</p>
+
+    {% if order %}
+      <ul class="summary">
+        <li><span>ID Pesanan</span><strong>#{{ order.id }}</strong></li>
+        <li><span>Status</span><strong>{{ order.status }}</strong></li>
+        <li>
+          <span>Metode Bayar</span>
+          <strong>
+          {% if order.payment_method == "cash" %}
+            Cash / COD
+          {% elif order.payment_method == "transfer" %}
+            Transfer Bank
+          {% else %}
+            E-Wallet
+          {% endif %}
+          </strong>
+        </li>
+      </ul>
+    {% endif %}
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <ul>
+        <ul class="flash-list">
           {% for category, message in messages %}
             <li>{{ message }}</li>
           {% endfor %}
@@ -30,8 +161,14 @@
       {% endif %}
     {% endwith %}
 
-    <p><a href="{{ url_for('order.history') }}">Lihat riwayat pesanan</a></p>
-    <p><a href="{{ url_for('order.checkout') }}">Buat pesanan lagi</a></p>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('main.index') }}">Kembali ke Beranda</a>
+      {% if session.get("user_role") == "admin" %}
+        <a class="btn btn-soft" href="{{ url_for('admin.dashboard') }}">Ke Dashboard Admin</a>
+      {% endif %}
+      <a class="btn btn-soft" href="{{ url_for('order.history') }}">Lihat Riwayat Pesanan</a>
+      <a class="btn btn-soft" href="{{ url_for('order.checkout') }}">Buat Pesanan Lagi</a>
+    </div>
   </main>
 </body>
 </html>

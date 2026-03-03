@@ -14,6 +14,9 @@
             <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
             <a href="{{ url_for('admin.categories') }}">Kategori</a>
             <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+            <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
+                <button type="submit" class="nav-logout">Logout Admin</button>
+            </form>
         </nav>
     </header>
 
