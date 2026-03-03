@@ -13,29 +13,104 @@
             <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
             <a href="{{ url_for('admin.categories') }}">Kategori</a>
-            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+            <a class="is-active" href="{{ url_for('admin.orders') }}">Pesanan</a>
+            <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
+                <button type="submit" class="nav-logout">Logout Admin</button>
+            </form>
         </nav>
     </header>
 
-    <main>
+    <main class="orders-page">
         <section>
-            <h2>Daftar Pesanan</h2>
-            <table border="1" cellpadding="8" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>ID Pesanan</th>
-                        <th>Pelanggan</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Tanggal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="5">Belum ada data pesanan.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="orders-head">
+                <h2>Daftar Pesanan</h2>
+                <p>Total pesanan: <strong>{{ orders|length if orders else 0 }}</strong></p>
+            </div>
+            <div class="orders-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Pesanan</th>
+                            <th>Pelanggan</th>
+                            <th>Email</th>
+                            <th>Alamat</th>
+                            <th>Total</th>
+                            <th>Metode Bayar</th>
+                            <th>Verifikasi</th>
+                            <th>Bukti Bayar</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if orders %}
+                            {% for order in orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.customer_name }}</td>
+                                    <td>{{ order.customer_email }}</td>
+                                    <td>{{ order.address }}</td>
+                                    <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
+                                    <td>
+                                        {% if order.payment_method == "cash" %}
+                                            Cash / COD
+                                        {% elif order.payment_method == "transfer" %}
+                                            Transfer Bank
+                                        {% else %}
+                                            E-Wallet
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if order.payment_method in ["transfer", "ewallet"] %}
+                                            {% if order.payment_verification == "verified" %}
+                                                <span class="badge badge-success">Terverifikasi</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Menunggu</span>
+                                                <form method="post" action="{{ url_for('admin.verify_payment', order_id=order.id) }}" class="inline-form">
+                                                    <button type="submit">Verifikasi</button>
+                                                </form>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge badge-neutral">COD</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if order.payment_proof_path %}
+                                            <a href="{{ url_for('static', filename=order.payment_proof_path) }}" target="_blank">Lihat Bukti</a>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge badge-status">{{ order.status }}</span></td>
+                                    <td>{{ order.created_at.replace('T', ' ') }}</td>
+                                    <td>
+                                        <div class="action-stack">
+                                            <form method="post" action="{{ url_for('admin.update_order_status', order_id=order.id) }}">
+                                                <select name="status">
+                                                    <option value="Menunggu Pembayaran" {% if order.status == "Menunggu Pembayaran" %}selected{% endif %}>Menunggu Pembayaran</option>
+                                                    <option value="Sedang Dimasak" {% if order.status == "Sedang Dimasak" %}selected{% endif %}>Sedang Dimasak</option>
+                                                    <option value="Dalam Perjalanan" {% if order.status == "Dalam Perjalanan" %}selected{% endif %}>Dalam Perjalanan</option>
+                                                    <option value="Selesai" {% if order.status == "Selesai" %}selected{% endif %}>Selesai</option>
+                                                    <option value="Dibatalkan" {% if order.status == "Dibatalkan" %}selected{% endif %}>Dibatalkan</option>
+                                                </select>
+                                                <button type="submit">Update Status</button>
+                                            </form>
+                                            <form method="post" action="{{ url_for('admin.order_delete', order_id=order.id) }}" onsubmit="return confirm('Hapus pesanan ini?');">
+                                                <button type="submit" class="danger">Hapus Pesanan</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="11">Belum ada data pesanan.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </section>
 </main>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>

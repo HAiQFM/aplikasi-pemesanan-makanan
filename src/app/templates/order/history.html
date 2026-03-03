@@ -8,43 +8,232 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet" />
   <title>Riwayat Pesanan - Aplikasi Pemesanan Makanan</title>
   <style>
-    body { margin: 0; font-family: "Nunito", "Segoe UI", sans-serif; background: radial-gradient(circle at top right, #c7edcf 0%, #f3fbf4 45%); color: #0b2e20; }
-    .container { max-width: 760px; margin: 40px auto; background: #fff; border: 1px solid #cfe8d2; border-radius: 18px; padding: 24px; box-shadow: 0 12px 24px rgba(15, 106, 57, 0.12); }
-    h1 { margin-top: 0; }
-    .subtitle { color: #4d6b5e; }
-    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #d9eddc; }
-    th { background: #ecfaef; }
-    .status { font-weight: 700; color: #0f6a39; }
-    a { color: #0f6a39; text-decoration: none; font-weight: 700; }
+    :root {
+      --bg: #edf7ef;
+      --panel: #ffffff;
+      --line: #d3e8d8;
+      --text: #123222;
+      --muted: #4a6d5b;
+      --primary: #0f6a39;
+      --primary-soft: #e8f6eb;
+      --shadow: 0 16px 30px rgba(15, 106, 57, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Nunito", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top right, #d7f2dd 0%, rgba(215, 242, 221, 0) 42%),
+        radial-gradient(circle at bottom left, #e1f5e6 0%, rgba(225, 245, 230, 0) 35%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 26px 14px;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    h1 { margin: 0; font-size: 1.8rem; }
+    .subtitle { color: var(--muted); margin: 8px 0 0; }
+    .table-wrap {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 920px;
+      background: #fff;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #e3efe6;
+      vertical-align: top;
+    }
+    th {
+      background: #f1faf3;
+      color: #1f4d37;
+      font-weight: 800;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    tbody tr:hover { background: #fbfffc; }
+    a { color: var(--primary); text-decoration: none; font-weight: 700; }
     a:hover { text-decoration: underline; }
+    .actions {
+      margin-bottom: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-back {
+      display: inline-block;
+      padding: 9px 13px;
+      border-radius: 999px;
+      border: 1px solid #a9d7b5;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .btn-back:hover { background: #dcf1e1; text-decoration: none; }
+    .status-pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      border: 1px solid #b9e1c4;
+      font-weight: 700;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+    .upload-proof-form {
+      display: grid;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .upload-proof-form input[type="file"] {
+      font: inherit;
+      font-size: 0.8rem;
+    }
+    .upload-proof-form button {
+      background: var(--primary);
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      width: fit-content;
+    }
+    .proof-link {
+      display: inline-block;
+      margin-top: 2px;
+      font-size: 0.84rem;
+    }
+    .muted-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+    .item-list {
+      margin: 6px 0 0;
+      padding-left: 18px;
+      color: #355243;
+      font-size: 0.82rem;
+    }
+    .address-note {
+      margin: 0;
+      color: #355243;
+      font-size: 0.82rem;
+    }
+    .footer-link {
+      margin: 16px 0 0;
+      display: inline-block;
+      background: var(--primary-soft);
+      border: 1px solid #b8dfc3;
+      padding: 9px 12px;
+      border-radius: 999px;
+    }
+    @media (max-width: 768px) {
+      .container { padding: 16px; border-radius: 16px; }
+      h1 { font-size: 1.45rem; }
+      th, td { padding: 10px; }
+    }
   </style>
 </head>
 <body>
   <main class="container">
+    <div class="actions">
+      <a class="btn-back" href="#" onclick="history.back(); return false;" aria-label="Kembali">&#8592;</a>
+    </div>
     <h1>Riwayat Pesanan</h1>
     <p class="subtitle">Daftar pesanan terakhir Anda.</p>
 
-    <table>
-      <thead>
-        <tr>
-          <th>ID Pesanan</th>
-          <th>Tanggal</th>
-          <th>Total</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-      
-        </tr>
-        <tr>
-      
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Pesanan</th>
+            <th>Tanggal</th>
+            <th>Total</th>
+            <th>Detail Pesanan</th>
+            <th>Metode Bayar</th>
+            <th>Status</th>
+            <th>Bukti Pembayaran</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if orders %}
+            {% for order in orders %}
+              <tr>
+                <td>#{{ order.id }}</td>
+                <td>{{ order.created_at.replace('T', ' ') }}</td>
+                <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
+                <td>
+                  <p class="address-note"><strong>Alamat:</strong> {{ order.address }}</p>
+                  {% if order["items"] %}
+                    <ul class="item-list">
+                      {% for item in order["items"] %}
+                        <li>{{ item["name"] }} x{{ item["qty"] }} (Rp {{ "{:,}".format(item["price"]).replace(',', '.') }})</li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <p class="muted-note">Detail item tidak tersedia.</p>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if order.payment_method == "cash" %}
+                    Cash / COD
+                  {% elif order.payment_method == "transfer" %}
+                    Transfer Bank
+                  {% else %}
+                    E-Wallet
+                  {% endif %}
+                </td>
+                <td><span class="status-pill">{{ order.status }}</span></td>
+                <td>
+                  {% if order.payment_method in ["transfer", "ewallet"] %}
+                    {% if order.payment_proof_path %}
+                      <a class="proof-link" href="{{ url_for('static', filename=order.payment_proof_path) }}" target="_blank">Lihat Bukti</a>
+                      {% if order.payment_verification == "pending" %}
+                        <p class="muted-note">Menunggu verifikasi admin.</p>
+                      {% else %}
+                        <p class="muted-note">Pembayaran sudah diverifikasi admin.</p>
+                      {% endif %}
+                    {% else %}
+                      <form class="upload-proof-form" method="post" action="{{ url_for('order.upload_payment_proof', order_id=order.id) }}" enctype="multipart/form-data">
+                        <input type="file" name="payment_proof" accept=".png,.jpg,.jpeg,.pdf" required />
+                        <button type="submit">Kirim Bukti</button>
+                      </form>
+                      <p class="muted-note">Upload bukti agar admin bisa verifikasi pembayaran.</p>
+                    {% endif %}
+                  {% else %}
+                    <span class="muted-note">Tidak perlu bukti untuk COD.</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7">Belum ada riwayat pesanan.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
 
-    <p><a href="{{ url_for('order.checkout') }}">Buat pesanan baru</a></p>
+    <p><a class="footer-link" href="{{ url_for('order.checkout') }}">Buat pesanan baru</a></p>
   </main>
 </body>
 </html>
