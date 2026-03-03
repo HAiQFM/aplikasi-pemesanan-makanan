@@ -15,10 +15,17 @@
 <section class="menu-grid">
   {% for item in menu_items %}
     <article class="menu-card">
+      <img class="menu-thumb" src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="{{ item.name }}" />
       <span class="menu-category">{{ item.category }}</span>
       <h2>{{ item.name }}</h2>
       <p>{{ item.desc }}</p>
-      <form method="post" action="{{ url_for('cart.add_to_cart') }}" class="menu-form">
+      <form
+        method="post"
+        action="{{ url_for('cart.add_to_cart') }}"
+        class="menu-form js-menu-add-form"
+        data-item-name="{{ item.name }}"
+        data-item-price="{{ item.price_value }}"
+      >
         <input type="hidden" name="menu_name" value="{{ item.name }}" />
         <label for="sambal-{{ loop.index }}">Pilih Sambal</label>
         <select id="sambal-{{ loop.index }}" name="sambal" required>
@@ -43,10 +50,17 @@
 <section class="menu-grid">
   {% for drink in drink_items %}
     <article class="menu-card">
+      <img class="menu-thumb" src="{{ url_for('static', filename='images/' ~ drink.image) }}" alt="{{ drink.name }}" />
       <span class="menu-category">{{ drink.category }}</span>
       <h2>{{ drink.name }}</h2>
       <p>{{ drink.desc }}</p>
-      <form method="post" action="{{ url_for('cart.add_to_cart') }}" class="menu-form">
+      <form
+        method="post"
+        action="{{ url_for('cart.add_to_cart') }}"
+        class="menu-form js-menu-add-form"
+        data-item-name="{{ drink.name }}"
+        data-item-price="{{ drink.price_value }}"
+      >
         <input type="hidden" name="menu_name" value="{{ drink.name }}" />
         <label for="request-{{ loop.index }}">Request rasa/catatan</label>
         <input

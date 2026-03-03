@@ -13,7 +13,7 @@
     <div class="hero-actions">
       <a class="btn" href="{{ url_for('auth.login') }}">Masuk Akun</a>
       <a class="btn btn-soft" href="{{ url_for('auth.register') }}">Buat Akun</a>
-      <a class="btn btn-soft" href="{{ url_for('order.checkout') }}">Mulai Checkout</a>
+      <a class="btn btn-soft" href="{{ url_for('menu.index') }}">Mulai Pesan 😋</a>
     </div>
   </div>
   <div class="hero-brand">
@@ -23,46 +23,81 @@
 
 <section class="phone-grid">
   <article class="phone-card splash-card">
-    <img class="card-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
-    <h2>Food Hall</h2>
-    <p>Kualitas segar langsung ke rumah Anda</p>
-    <a class="mini-btn" href="{{ url_for('auth.register') }}">Get Started</a>
+    <h2>Status Pemesanan</h2>
+    <p class="status-total">Notifikasi: {{ status_total if status_total is defined else 0 }}</p>
+    <ul class="order-history">
+      <li><span>Menunggu Pembayaran</span><strong>{{ status_counts['Menunggu Pembayaran'] if status_counts is defined else 0 }}</strong></li>
+      <li><span>Sedang Dimasak</span><strong>{{ status_counts['Sedang Dimasak'] if status_counts is defined else 0 }}</strong></li>
+      <li><span>Dalam Perjalanan</span><strong>{{ status_counts['Dalam Perjalanan'] if status_counts is defined else 0 }}</strong></li>
+      <li><span>Selesai</span><strong>{{ status_counts['Selesai'] if status_counts is defined else 0 }}</strong></li>
+      <li><span>Dibatalkan</span><strong>{{ status_counts['Dibatalkan'] if status_counts is defined else 0 }}</strong></li>
+    </ul>
   </article>
 
-  <article class="phone-card">
-    <h3>Food Hall Products</h3>
-    <p class="muted">Pilih produk lokal terbaik setiap hari</p>
-    <div class="chip-row">
-      <span class="chip">All</span>
-      <span class="chip">Vegetables</span>
-      <span class="chip">Fruits</span>
+  <article class="phone-card" data-role="quick-food-hall">
+    <h3>Quick Food Hall</h3>
+    <p class="muted">Pilih menu makanan dan minuman dengan cepat</p>
+    <div class="chip-row" data-role="quick-filters">
+      <button type="button" class="chip is-active" data-filter="all">All</button>
+      <button type="button" class="chip" data-filter="makanan">Makanan</button>
+      <button type="button" class="chip" data-filter="minuman">Minuman</button>
     </div>
-    <div class="product-box">
-      <div>
-        
+    <div class="quick-slider">
+      <div class="quick-slider-viewport" data-role="quick-slider-viewport">
+        <div class="product-box" data-category="makanan" data-item-name="Ayam Geprek" data-item-price="13000">
+          <div>
+            <p class="item-name">Ayam Geprek</p>
+            <p class="item-price">Rp 13.000</p>
+          </div>
+          <button type="button" class="mini-btn js-add-to-cart">Tambah</button>
+        </div>
+        <div class="product-box" data-category="makanan" data-item-name="Ayam Bakar" data-item-price="13000">
+          <div>
+            <p class="item-name">Ayam Bakar</p>
+            <p class="item-price">Rp 13.000</p>
+          </div>
+          <button type="button" class="mini-btn js-add-to-cart">Tambah</button>
+        </div>
+        <div class="product-box" data-category="makanan" data-item-name="Ayam Goreng" data-item-price="13000">
+          <div>
+            <p class="item-name">Ayam Goreng</p>
+            <p class="item-price">Rp 13.000</p>
+          </div>
+          <button type="button" class="mini-btn js-add-to-cart">Tambah</button>
+        </div>
+        <div class="product-box" data-category="minuman" data-item-name="Es Teh Manis" data-item-price="6000">
+          <div>
+            <p class="item-name">Es Teh Manis</p>
+            <p class="item-price">Rp 6.000</p>
+          </div>
+          <button type="button" class="mini-btn js-add-to-cart">Tambah</button>
+        </div>
+        <div class="product-box" data-category="minuman" data-item-name="Jus Jeruk" data-item-price="10000">
+          <div>
+            <p class="item-name">Jus Jeruk</p>
+            <p class="item-price">Rp 10.000</p>
+          </div>
+          <button type="button" class="mini-btn js-add-to-cart">Tambah</button>
+        </div>
       </div>
-      <a class="mini-btn" href="{{ url_for('order.checkout') }}">Tambah</a>
+      <p class="muted" data-role="quick-empty" hidden>Tidak ada menu pada kategori ini.</p>
     </div>
   </article>
 
   <article class="phone-card">
     <h3>Keranjang</h3>
-    <ul class="cart-list">
-      
-    </ul>
-    <p class="total"></p>
+    <ul class="cart-list" data-role="home-cart-list"></ul>
+    <p class="total" data-role="home-cart-total"></p>
     <a class="mini-btn wide" href="{{ url_for('order.checkout') }}">Check Out</a>
   </article>
-
-  <article class="phone-card">
-    <h3>Order Timeline</h3>
-    <ul class="timeline">
-      <li>Order Placed</li>
-      <li>Pending</li>
-      <li>Processing</li>
-      <li>Delivered</li>
+<div class="phone-card">
+    <h3>Riwayat Pesanan</h3>
+    <p class="muted">Lihat status dan detail pesanan sebelumnya</p>
+    <ul class="order-history">
+      
     </ul>
     <a class="mini-btn wide" href="{{ url_for('order.history') }}">Lihat Riwayat</a>
-  </article>
+  </div>
+
 </section>
 {% endblock %}
