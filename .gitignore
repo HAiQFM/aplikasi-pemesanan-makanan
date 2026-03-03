@@ -24,3 +24,18 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.tiff
+*.tif
+*.svg
+*.ico
+*.heic
+*.heif
+*.avif
