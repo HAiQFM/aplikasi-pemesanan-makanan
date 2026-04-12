@@ -1,6 +1,14 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from app.services.order_store import STATUS_LABELS, delete_order, get_order, list_orders, update_order
+from app.services.order_store import (
+    STATUS_LABELS,
+    admin_sales_overview,
+    daily_sales_report,
+    delete_order,
+    get_order,
+    list_orders,
+    update_order,
+)
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -16,11 +24,15 @@ def require_admin():
 def dashboard():
     orders = list_orders()
     pending_payment_count = sum(1 for order in orders if order.get("status") == "Menunggu Pembayaran")
+    sales_report = daily_sales_report(limit=7)
+    sales_overview = admin_sales_overview(transaction_limit=10, menu_limit=10)
     return render_template(
         "admin/dashboard.html",
         total_order=len(orders),
         pending_order=pending_payment_count,
         recent_orders=orders[:5],
+        sales_report=sales_report,
+        sales_overview=sales_overview,
     )
 
 

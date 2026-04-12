@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 from flask import current_app
@@ -122,3 +122,128 @@ def status_counts(customer_email: str | None = None) -> dict[str, int]:
         if status in counts:
             counts[status] += 1
     return counts
+
+
+def daily_sales_report(limit: int = 7) -> dict:
+    report_by_day: dict[str, dict] = {}
+
+    for order in list_orders():
+        created_at = str(order.get("created_at", "")).strip()
+        total_amount = int(order.get("total_amount", 0) or 0)
+        status = str(order.get("status", "")).strip()
+
+        try:
+            order_date = datetime.fromisoformat(created_at).date()
+        except ValueError:
+            continue
+
+        day_key = order_date.isoformat()
+        day_report = report_by_day.setdefault(
+            day_key,
+            {
+                "date": day_key,
+                "label": order_date.strftime("%d %b %Y"),
+                "order_count": 0,
+                "completed_count": 0,
+                "canceled_count": 0,
+                "gross_sales": 0,
+            },
+        )
+
+        day_report["order_count"] += 1
+        if status == "Selesai":
+            day_report["completed_count"] += 1
+        if status == "Dibatalkan":
+            day_report["canceled_count"] += 1
+            continue
+        day_report["gross_sales"] += total_amount
+
+    rows = sorted(report_by_day.values(), key=lambda item: item["date"], reverse=True)
+    for row in rows:
+        valid_order_count = row["order_count"] - row["canceled_count"]
+        row["average_sales"] = int(row["gross_sales"] / valid_order_count) if valid_order_count > 0 else 0
+
+    today_key = date.today().isoformat()
+    today = next(
+        (row for row in rows if row["date"] == today_key),
+        {
+            "date": today_key,
+            "label": date.today().strftime("%d %b %Y"),
+            "order_count": 0,
+            "completed_count": 0,
+            "canceled_count": 0,
+            "gross_sales": 0,
+            "average_sales": 0,
+        },
+    )
+
+    return {
+        "today": today,
+        "rows": rows[:limit],
+    }
+
+
+def admin_sales_overview(transaction_limit: int = 10, menu_limit: int = 10) -> dict:
+    menu_totals: dict[str, dict] = {}
+    transactions: list[dict] = []
+    total_revenue = 0
+    total_transactions = 0
+
+    for order in list_orders():
+        status = str(order.get("status", "")).strip()
+        total_amount = int(order.get("total_amount", 0) or 0)
+        is_canceled = status == "Dibatalkan"
+
+        transactions.append(
+            {
+                "id": order.get("id"),
+                "customer_name": order.get("customer_name") or "Pelanggan",
+                "status": status or "-",
+                "total_amount": total_amount,
+                "created_at": str(order.get("created_at", "")).replace("T", " "),
+                "item_summary": ", ".join(
+                    f"{int(item.get('qty', 0) or 0)}x {str(item.get('name', '')).strip()}".strip()
+                    for item in order.get("items", [])
+                    if isinstance(item, dict) and str(item.get("name", "")).strip()
+                ) or "-",
+            }
+        )
+
+        if is_canceled:
+            continue
+
+        total_transactions += 1
+        total_revenue += total_amount
+
+        for item in order.get("items", []):
+            if not isinstance(item, dict):
+                continue
+            menu_name = str(item.get("name", "")).strip()
+            quantity = int(item.get("qty", 0) or 0)
+            price = int(item.get("price", 0) or 0)
+            if not menu_name or quantity <= 0:
+                continue
+
+            menu_report = menu_totals.setdefault(
+                menu_name,
+                {
+                    "name": menu_name,
+                    "qty_sold": 0,
+                    "revenue": 0,
+                },
+            )
+            menu_report["qty_sold"] += quantity
+            menu_report["revenue"] += quantity * price
+
+    menu_rows = sorted(
+        menu_totals.values(),
+        key=lambda item: (item["qty_sold"], item["revenue"], item["name"].lower()),
+        reverse=True,
+    )
+
+    return {
+        "total_revenue": total_revenue,
+        "total_transactions": total_transactions,
+        "menu_rows": menu_rows[:menu_limit],
+        "transactions": transactions[:transaction_limit],
+    }

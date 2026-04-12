@@ -5,11 +5,11 @@
 {% block content %}
 <section class="menu-hero">
   <div>
-    <p class="eyebrow">Food Hall Menu</p>
+    <p class="eyebrow">Food Hall - Warung Nasi Teh Sarah Menu</p>
     <h1>Daftar Paket Ayam</h1>
     <p class="hero-text">Pilih menu ayam favorit Anda lalu tentukan opsi sambal sesuai selera.</p>
   </div>
-  <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
+  <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall - Warung Nasi Teh Sarah Logo" />
 </section>
 
 <section class="menu-grid">
@@ -27,8 +27,21 @@
         data-item-price="{{ item.price_value }}"
       >
         <input type="hidden" name="menu_name" value="{{ item.name }}" />
+        <label for="spice-level-{{ loop.index }}">Tingkat Kepedasan</label>
+        <select
+          id="spice-level-{{ loop.index }}"
+          name="spice_level"
+          class="js-spice-level"
+          data-sambal-target="sambal-{{ loop.index }}"
+          required
+        >
+          <option value="Tanpa Pedas">Tanpa Pedas</option>
+          <option value="Sedang">Sedang</option>
+          <option value="Pedas">Pedas</option>
+          <option value="Pisah">Pisah</option>
+        </select>
         <label for="sambal-{{ loop.index }}">Pilih Sambal</label>
-        <select id="sambal-{{ loop.index }}" name="sambal" required>
+        <select id="sambal-{{ loop.index }}" name="sambal" disabled>
           {% for sambal in sambal_options %}
             <option value="{{ sambal }}">{{ sambal }}</option>
           {% endfor %}
