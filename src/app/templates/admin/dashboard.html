@@ -23,7 +23,7 @@
     <main class="dashboard-page">
         <section class="dashboard-hero">
             <p class="dashboard-eyebrow">Panel Kontrol</p>
-            <h2>Kelola Operasional Food Hall</h2>
+            <h2>Kelola Operasional Food Hall - Warung Nasi Teh Sarah</h2>
             <p>Monitor menu, kategori, dan pesanan pelanggan dari satu tempat.</p>
             <div class="dashboard-hero-actions">
                 <a href="{{ url_for('admin.menu_add') }}">Tambah Menu</a>
@@ -48,6 +48,158 @@
                 <p>Pending</p>
                 <strong>{{ pending_order if pending_order is defined else 0 }}</strong>
             </article>
+        </section>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <h3>Ringkasan Laporan Admin</h3>
+                    <p class="section-subtitle">Menampilkan jumlah penjualan per menu, total pendapatan, dan transaksi terbaru.</p>
+                </div>
+            </div>
+
+            <div class="stats-grid report-stats-grid">
+                <article class="stat-card report-card">
+                    <p>Total Pendapatan</p>
+                    <strong>Rp {{ "{:,}".format(sales_overview.total_revenue if sales_overview is defined else 0).replace(',', '.') }}</strong>
+                </article>
+                <article class="stat-card report-card">
+                    <p>Total Transaksi</p>
+                    <strong>{{ sales_overview.total_transactions if sales_overview is defined else 0 }}</strong>
+                </article>
+                <article class="stat-card report-card">
+                    <p>Menu Terjual</p>
+                    <strong>{{ sales_overview.menu_rows|length if sales_overview is defined else 0 }}</strong>
+                </article>
+                <article class="stat-card report-card">
+                    <p>Transaksi Ditampilkan</p>
+                    <strong>{{ sales_overview.transactions|length if sales_overview is defined else 0 }}</strong>
+                </article>
+            </div>
+
+            <div class="report-grid">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Menu</th>
+                                <th>Jumlah Terjual</th>
+                                <th>Pendapatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if sales_overview is defined and sales_overview.menu_rows %}
+                                {% for item in sales_overview.menu_rows %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.qty_sold }}</td>
+                                        <td>Rp {{ "{:,}".format(item.revenue).replace(',', '.') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3">Belum ada data penjualan per menu.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Pelanggan</th>
+                                <th>Item</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if sales_overview is defined and sales_overview.transactions %}
+                                {% for transaction in sales_overview.transactions %}
+                                    <tr>
+                                        <td>#{{ transaction.id }}</td>
+                                        <td>{{ transaction.customer_name }}</td>
+                                        <td>{{ transaction.item_summary }}</td>
+                                        <td>Rp {{ "{:,}".format(transaction.total_amount).replace(',', '.') }}</td>
+                                        <td>{{ transaction.status }}</td>
+                                        <td>{{ transaction.created_at }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6">Belum ada transaksi yang tercatat.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <h3>Laporan Penjualan Harian</h3>
+                    <p class="section-subtitle">Rekap penjualan otomatis dari data pesanan yang masuk setiap hari.</p>
+                </div>
+                <span class="report-date">{{ sales_report.today.label if sales_report is defined else '-' }}</span>
+            </div>
+
+            <div class="stats-grid report-stats-grid">
+                <article class="stat-card report-card">
+                    <p>Penjualan Hari Ini</p>
+                    <strong>Rp {{ "{:,}".format(sales_report.today.gross_sales if sales_report is defined else 0).replace(',', '.') }}</strong>
+                </article>
+                <article class="stat-card report-card">
+                    <p>Pesanan Hari Ini</p>
+                    <strong>{{ sales_report.today.order_count if sales_report is defined else 0 }}</strong>
+                </article>
+                <article class="stat-card report-card">
+                    <p>Pesanan Selesai</p>
+                    <strong>{{ sales_report.today.completed_count if sales_report is defined else 0 }}</strong>
+                </article>
+                <article class="stat-card report-card">
+                    <p>Rata-rata Nilai Order</p>
+                    <strong>Rp {{ "{:,}".format(sales_report.today.average_sales if sales_report is defined else 0).replace(',', '.') }}</strong>
+                </article>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Total Pesanan</th>
+                            <th>Selesai</th>
+                            <th>Dibatalkan</th>
+                            <th>Total Penjualan</th>
+                            <th>Rata-rata Order</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if sales_report is defined and sales_report.rows %}
+                            {% for row in sales_report.rows %}
+                                <tr>
+                                    <td>{{ row.label }}</td>
+                                    <td>{{ row.order_count }}</td>
+                                    <td>{{ row.completed_count }}</td>
+                                    <td>{{ row.canceled_count }}</td>
+                                    <td>Rp {{ "{:,}".format(row.gross_sales).replace(',', '.') }}</td>
+                                    <td>Rp {{ "{:,}".format(row.average_sales).replace(',', '.') }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6">Belum ada data penjualan harian.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <section>

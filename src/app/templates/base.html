@@ -14,16 +14,23 @@
   <header class="nav">
     <div class="nav-inner">
       <a class="brand" href="{{ url_for('main.index') }}">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall Logo" />
-        <span>Food Hall</span>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall - Warung Nasi Teh Sarah Logo" />
+        <span>Food Hall - Warung Nasi Teh Sarah</span>
       </a>
       <nav class="nav-links">
         <a href="{{ url_for('main.index') }}">Beranda</a>
         <a href="{{ url_for('menu.index') }}">Menu</a>
         <a href="{{ url_for('order.checkout') }}">Checkout</a>
         <a href="{{ url_for('order.history') }}">Riwayat</a>
-        <a href="{{ url_for('auth.login') }}">Login</a>
-        <a href="{{ url_for('auth.register') }}">Registrasi</a>
+        {% if session.get('is_logged_in') and session.get('user_role') == 'customer' %}
+          <span class="nav-user">Hi, {{ session.get('user_name', 'Pelanggan') }}</span>
+          <form method="post" action="{{ url_for('auth.logout') }}" class="nav-inline-form">
+            <button type="submit" class="nav-logout">Logout</button>
+          </form>
+        {% elif not session.get('is_logged_in') %}
+          <a href="{{ url_for('auth.login') }}">Login</a>
+          <a href="{{ url_for('auth.register') }}">Registrasi</a>
+        {% endif %}
       </nav>
     </div>
   </header>
