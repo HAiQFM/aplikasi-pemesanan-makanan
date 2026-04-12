@@ -5,6 +5,13 @@ ADMIN_EMAIL = "ffaiqm14@gmail.com"
 ADMIN_PASSWORD = "123456"
 
 
+def _reset_auth_session() -> None:
+    preserved_users = session.get("users", {})
+    session.clear()
+    if preserved_users:
+        session["users"] = preserved_users
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -54,19 +61,13 @@ def register():
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():
-    session.pop("is_logged_in", None)
-    session.pop("user_email", None)
-    session.pop("user_name", None)
-    session.pop("user_role", None)
+    _reset_auth_session()
     flash("Anda telah logout.", "info")
     return redirect(url_for("auth.login"))
 
 
 @auth_bp.route("/logout-admin", methods=["POST"])
 def logout_admin():
-    session.pop("is_logged_in", None)
-    session.pop("user_email", None)
-    session.pop("user_name", None)
-    session.pop("user_role", None)
+    _reset_auth_session()
     flash("Admin logout berhasil.", "info")
     return redirect(url_for("main.index"))

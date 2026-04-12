@@ -48,7 +48,17 @@ def _parse_checkout_items(raw_value: str) -> list[dict]:
         price = int(item.get("price", 0) or 0)
         if not name or qty <= 0 or price < 0:
             continue
-        normalized.append({"name": name, "qty": qty, "price": price})
+        raw_details = item.get("details", [])
+        details = []
+        if isinstance(raw_details, list):
+            for detail in raw_details:
+                if not isinstance(detail, dict):
+                    continue
+                label = str(detail.get("label", "")).strip()
+                value = str(detail.get("value", "")).strip()
+                if label and value:
+                    details.append({"label": label, "value": value})
+        normalized.append({"name": name, "qty": qty, "price": price, "details": details})
     return normalized
 
 
