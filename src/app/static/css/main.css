@@ -70,6 +70,7 @@ body {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .nav-links a {
@@ -94,6 +95,34 @@ body {
 .nav-links a.is-active {
   color: var(--primary);
   font-weight: 700;
+}
+
+.nav-inline-form {
+  margin: 0;
+}
+
+.nav-user {
+  color: #dbf4e0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 6px 2px;
+}
+
+.nav-logout {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.nav-logout:hover {
+  background: #ffffff;
+  color: #0f6a39;
 }
 
 .container {

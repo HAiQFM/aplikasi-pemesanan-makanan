@@ -1,6 +1,6 @@
-# Aplikasi Pemesanan Makanan - Food Hall
+# Aplikasi Pemesanan Makanan - Food Hall - Warung Nasi Teh Sarah
 
-Proyek ini adalah aplikasi web sederhana untuk pemesanan makanan pada tempat makan **Food Hall**. Aplikasi dibangun menggunakan **Flask** dengan struktur modular (routes, models, templates, static) dan mendukung alur dasar pengguna dari login sampai checkout.
+Proyek ini adalah aplikasi web sederhana untuk pemesanan makanan pada tempat makan **Food Hall - Warung Nasi Teh Sarah**. Aplikasi dibangun menggunakan **Flask** dengan struktur modular (routes, models, templates, static) dan mendukung alur dasar pengguna dari login sampai checkout.
 
 ## Fitur Utama
 
