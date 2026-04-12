@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setActiveNavLink();
   enhanceFlashMessages();
   preventDoubleSubmit();
+  initLoginWarningModal();
   initHomeQuickMenu();
   initMenuAddForms();
   initCheckoutCart();
@@ -57,6 +58,60 @@ function preventDoubleSubmit() {
 
 var CART_STORAGE_KEY = "foodhall_cart";
 var PROMO_STORAGE_KEY = "foodhall_promo_code";
+var loginWarningController = null;
+
+function isUserLoggedIn() {
+  return document.body && document.body.getAttribute("data-is-logged-in") === "true";
+}
+
+function initLoginWarningModal() {
+  var modal = document.querySelector("[data-role='login-warning-modal']");
+  if (!modal) return;
+
+  var dialog = modal.querySelector(".login-warning-dialog");
+  var closeButtons = modal.querySelectorAll("[data-role='login-warning-close']");
+  var hideTimer = null;
+
+  function closeModal() {
+    modal.classList.remove("is-visible");
+    modal.classList.add("is-hiding");
+    window.clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(function () {
+      modal.hidden = true;
+      modal.classList.remove("is-hiding");
+    }, 220);
+  }
+
+  function openModal() {
+    modal.hidden = false;
+    modal.classList.remove("is-hiding");
+    window.requestAnimationFrame(function () {
+      modal.classList.add("is-visible");
+    });
+  }
+
+  closeButtons.forEach(function (button) {
+    button.addEventListener("click", closeModal);
+  });
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) closeModal();
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+
+  loginWarningController = {
+    open: openModal,
+    close: closeModal,
+    focusDialog: function () {
+      if (dialog) dialog.focus();
+    }
+  };
+}
 
 function getCartItems() {
   try {
@@ -224,6 +279,17 @@ function initMenuAddForms() {
 
   forms.forEach(function (form) {
     form.addEventListener("submit", function (event) {
+      if (!isUserLoggedIn()) {
+        event.preventDefault();
+        if (loginWarningController) {
+          loginWarningController.open();
+          window.setTimeout(function () {
+            loginWarningController.focusDialog();
+          }, 30);
+        }
+        return;
+      }
+
       event.preventDefault();
       var name = form.getAttribute("data-item-name");
       var price = Number(form.getAttribute("data-item-price"));
