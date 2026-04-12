@@ -251,6 +251,32 @@ button:hover {
     gap: 12px;
 }
 
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.section-subtitle {
+    margin: 6px 0 0;
+    color: var(--muted);
+}
+
+.report-date {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid #c6e8e4;
+    background: #e8f5f4;
+    color: var(--brand-strong);
+    padding: 6px 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .stat-card {
     background: #f8fbff;
     border: 1px solid #d8e4f2;
@@ -267,6 +293,25 @@ button:hover {
 .stat-card strong {
     font-size: 1.5rem;
     color: #0f4f4a;
+}
+
+.report-stats-grid {
+    margin-bottom: 14px;
+}
+
+.report-card {
+    background: linear-gradient(180deg, #f8fffd 0%, #f3fbfa 100%);
+    border-color: #cfe8e4;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .quick-links {
@@ -390,8 +435,13 @@ button:hover {
     }
 
     .stats-grid,
-    .quick-links {
+    .quick-links,
+    .report-grid {
         grid-template-columns: 1fr;
+    }
+
+    .section-head {
+        flex-direction: column;
     }
 
     .orders-head {

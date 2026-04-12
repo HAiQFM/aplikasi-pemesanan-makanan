@@ -66,6 +66,9 @@ function getCartItems() {
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(function (item) {
       return item && item.name && Number(item.price) > 0 && Number(item.qty) > 0;
+    }).map(function (item) {
+      item.details = sanitizeItemDetails(item.details);
+      return item;
     });
   } catch (error) {
     return [];
@@ -103,25 +106,91 @@ function calculatePromoDiscount(subtotal) {
   return Math.round(subtotal * 0.2);
 }
 
-function addItemToCart(name, price) {
+function normalizeItemDetail(label, value) {
+  var safeLabel = String(label || "").trim();
+  var safeValue = String(value || "").trim();
+  if (!safeLabel || !safeValue) return null;
+  return { label: safeLabel, value: safeValue };
+}
+
+function sanitizeItemDetails(details) {
+  if (!Array.isArray(details)) return [];
+  return details
+    .map(function (detail) {
+      if (!detail || typeof detail !== "object") return null;
+      return normalizeItemDetail(detail.label, detail.value);
+    })
+    .filter(Boolean);
+}
+
+function buildCartItemKey(name, details) {
+  return JSON.stringify({
+    name: String(name || "").trim(),
+    details: sanitizeItemDetails(details),
+  });
+}
+
+function getFormItemDetails(form) {
+  if (!form) return [];
+
+  var details = [];
+  var spiceLevelField = form.querySelector("[name='spice_level']");
+  var sambalField = form.querySelector("[name='sambal']");
+  var requestField = form.querySelector("[name='request_rasa']");
+
+  if (spiceLevelField && spiceLevelField.value) {
+    details.push({ label: "Tingkat Pedas", value: spiceLevelField.value });
+  }
+
+  if (sambalField && !sambalField.disabled && sambalField.value) {
+    details.push({ label: "Sambal", value: sambalField.value });
+  }
+
+  if (requestField && requestField.value.trim()) {
+    details.push({ label: "Request", value: requestField.value.trim() });
+  }
+
+  return sanitizeItemDetails(details);
+}
+
+function formatItemDetails(details) {
+  return sanitizeItemDetails(details)
+    .map(function (detail) {
+      return detail.label + ": " + detail.value;
+    })
+    .join(" • ");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function addItemToCart(name, price, details) {
   var items = getCartItems();
+  var normalizedDetails = sanitizeItemDetails(details);
   var existing = items.find(function (item) {
-    return item.name === name;
+    return buildCartItemKey(item.name, item.details) === buildCartItemKey(name, normalizedDetails);
   });
 
   if (existing) {
     existing.qty += 1;
   } else {
-    items.push({ name: name, price: Number(price), qty: 1 });
+    items.push({ name: name, price: Number(price), qty: 1, details: normalizedDetails });
   }
 
   saveCartItems(items);
 }
 
-function decrementItemFromCart(name) {
+function decrementItemFromCart(name, details) {
   var items = getCartItems();
+  var targetKey = buildCartItemKey(name, details);
   var index = items.findIndex(function (item) {
-    return item.name === name;
+    return buildCartItemKey(item.name, item.details) === targetKey;
   });
   if (index === -1) return;
 
@@ -205,7 +274,7 @@ function initHomeQuickMenu() {
       var price = Number(product.getAttribute("data-item-price"));
       if (!name || !price) return;
 
-      addItemToCart(name, price);
+      addItemToCart(name, price, []);
       renderHomeCartSummary();
       button.textContent = "Ditambah";
       window.setTimeout(function () {
@@ -223,13 +292,34 @@ function initMenuAddForms() {
   if (!forms.length) return;
 
   forms.forEach(function (form) {
+    var spiceLevelField = form.querySelector(".js-spice-level");
+    var sambalField = form.querySelector("[name='sambal']");
+
+    function syncSambalAvailability() {
+      if (!spiceLevelField || !sambalField) return;
+
+      var disableSambal = spiceLevelField.value === "Tanpa Pedas";
+      sambalField.disabled = disableSambal;
+      sambalField.required = !disableSambal;
+
+      if (disableSambal) {
+        sambalField.selectedIndex = 0;
+      }
+    }
+
+    if (spiceLevelField && sambalField) {
+      spiceLevelField.addEventListener("change", syncSambalAvailability);
+      syncSambalAvailability();
+    }
+
     form.addEventListener("submit", function (event) {
       event.preventDefault();
       var name = form.getAttribute("data-item-name");
       var price = Number(form.getAttribute("data-item-price"));
+      var details = getFormItemDetails(form);
       if (!name || !price) return;
 
-      addItemToCart(name, price);
+      addItemToCart(name, price, details);
 
       var button = form.querySelector("button[type='submit']");
       if (!button) return;
@@ -275,17 +365,24 @@ function initCheckoutCart() {
     }
 
     items.forEach(function (item) {
+      var itemDetails = formatItemDetails(item.details);
+      var detailMarkup = itemDetails
+        ? "<p class='item-meta'>" + escapeHtml(itemDetails) + "</p>"
+        : "";
+      var itemKey = escapeHtml(buildCartItemKey(item.name, item.details));
       var row = document.createElement("article");
       row.className = "cart-item";
       row.innerHTML =
         "<div><p class='item-name'>" +
-        item.name +
-        "</p><p class='item-price'>" +
+        escapeHtml(item.name) +
+        "</p>" +
+        detailMarkup +
+        "<p class='item-price'>" +
         formatRupiah(item.price * item.qty) +
         "</p></div><div class='checkout-item-actions'><span class='qty'>" +
         item.qty +
-        "x</span><button type='button' class='trash-btn' data-action='decrement-item' data-item-name='" +
-        item.name +
+        "x</span><button type='button' class='trash-btn' data-action='decrement-item' data-item-key='" +
+        itemKey +
         "' aria-label='Kurangi item' title='Kurangi item'>&#128465;</button></div>";
       cartList.appendChild(row);
     });
@@ -305,10 +402,15 @@ function initCheckoutCart() {
     var target = event.target;
     if (!(target instanceof Element)) return;
     if (target.getAttribute("data-action") !== "decrement-item") return;
-    var name = target.getAttribute("data-item-name");
-    if (!name) return;
+    var itemKey = target.getAttribute("data-item-key");
+    if (!itemKey) return;
 
-    decrementItemFromCart(name);
+    try {
+      var parsedKey = JSON.parse(itemKey);
+      decrementItemFromCart(parsedKey.name, parsedKey.details);
+    } catch (error) {
+      return;
+    }
     renderCheckoutCart();
     renderHomeCartSummary();
   });
