@@ -46,12 +46,30 @@
                         <th>ID</th>
                         <th>Nama</th>
                         <th>Deskripsi</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td colspan="3">Belum ada data kategori.</td>
-                    </tr>
+                    {% if categories %}
+                        {% for cat in categories %}
+                        <tr>
+                            <td>{{ cat.id }}</td>
+                            <td>{{ cat.name }}</td>
+                            <td>{{ cat.description or '-' }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('admin.category_delete', cat_id=cat.id) }}"
+                                      style="display:inline"
+                                      onsubmit="return confirm('Hapus kategori {{ cat.name }}?')">
+                                    <button type="submit" style="background:none;border:none;color:red;cursor:pointer;padding:0">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="4">Belum ada data kategori.</td></tr>
+                    {% endif %}
                 </tbody>
             </table>
         </section>
