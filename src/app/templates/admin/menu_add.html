@@ -31,7 +31,10 @@
                 <p>
                     <label for="category_id">Kategori</label><br>
                     <select id="category_id" name="category_id" required>
-                        <option value="">-- Pilih Kategori --</option>
+                            <option value="">-- Pilih Kategori --</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
                     </select>
                 </p>
                 <p>
@@ -44,11 +47,11 @@
                 </p>
                 <p>
                     <label for="image_url">URL Gambar</label><br>
-                    <input type="url" id="image_url" name="image_url">
+                    <input type="text" id="image_url" name="image_url" placeholder="Nama file gambar, contoh: nasi-ayam.jpg">
                 </p>
                 <p>
                     <label>
-                        <input type="checkbox" name="is_available" checked>
+                        <input type="checkbox" name="is_available" value="1" checked>
                         Tersedia
                     </label>
                 </p>

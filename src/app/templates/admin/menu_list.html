@@ -39,9 +39,30 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td colspan="6">Belum ada data menu.</td>
-                    </tr>
+                    {% if menus %}
+                        {% for menu in menus %}
+                        <tr>
+                            <td>{{ menu.id }}</td>
+                            <td>{{ menu.name }}</td>
+                            <td>{{ menu.category.name if menu.category else '-' }}</td>
+                            <td>Rp {{ "{:,.0f}".format(menu.price).replace(',', '.') }}</td>
+                            <td>{{ 'Tersedia' if menu.is_available else 'Tidak Tersedia' }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.menu_edit', menu_id=menu.id) }}">Edit</a>
+                                &nbsp;|&nbsp;
+                                <form method="post" action="{{ url_for('admin.menu_delete', menu_id=menu.id) }}"
+                                      style="display:inline"
+                                      onsubmit="return confirm('Hapus menu {{ menu.name }}?')">
+                                    <button type="submit" style="background:none;border:none;color:red;cursor:pointer;padding:0">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="6">Belum ada data menu. <a href="{{ url_for('admin.menu_add') }}">Tambah menu pertama</a>.</td></tr>
+                    {% endif %}
                 </tbody>
             </table>
         </section>
