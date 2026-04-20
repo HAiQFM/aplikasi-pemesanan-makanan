@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bahan Baku</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Stok Bahan Baku</h1>
+        <nav>
+            <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a class="is-active" href="{{ url_for('admin.ingredients') }}">Bahan Baku</a>
+            <a href="{{ url_for('admin.orders') }}">Pesanan</a>
+            <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
+                <button type="submit" class="nav-logout">Logout Admin</button>
+            </form>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <div class="section-head">
+                <div>
+                    <h2>Tambah Bahan Baku</h2>
+                    <p class="section-subtitle">Simpan stok berjalan dan batas minimum agar dashboard bisa memberi notifikasi restock.</p>
+                </div>
+                {% if low_stock_items %}
+                    <span class="report-date">{{ low_stock_items|length }} stok minimum</span>
+                {% endif %}
+            </div>
+
+            <form method="post" class="admin-form-grid">
+                <p>
+                    <label for="name">Nama Bahan</label>
+                    <input type="text" id="name" name="name" required>
+                </p>
+                <p>
+                    <label for="unit">Satuan</label>
+                    <input type="text" id="unit" name="unit" placeholder="kg, liter, pcs" required>
+                </p>
+                <p>
+                    <label for="current_stock">Stok Saat Ini</label>
+                    <input type="number" id="current_stock" name="current_stock" min="0" step="0.01" required>
+                </p>
+                <p>
+                    <label for="minimum_stock">Stok Minimum</label>
+                    <input type="number" id="minimum_stock" name="minimum_stock" min="0" step="0.01" required>
+                </p>
+                <p class="admin-form-full">
+                    <label for="note">Catatan</label>
+                    <textarea id="note" name="note" rows="3" placeholder="Contoh: dipakai untuk menu ayam bakar dan geprek"></textarea>
+                </p>
+                <p class="admin-form-full form-actions">
+                    <button type="submit">Simpan Bahan Baku</button>
+                </p>
+            </form>
+        </section>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <h2>Daftar Bahan Baku</h2>
+                    <p class="section-subtitle">Edit stok langsung dari tabel di bawah ini.</p>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Satuan</th>
+                            <th>Stok Saat Ini</th>
+                            <th>Stok Minimum</th>
+                            <th>Catatan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if ingredients %}
+                            {% for ingredient in ingredients %}
+                                <tr>
+                                    <td>{{ ingredient.name }}</td>
+                                    <td>{{ ingredient.unit }}</td>
+                                    <td>{{ "{:,.2f}".format(ingredient.stock_value).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                                    <td>{{ "{:,.2f}".format(ingredient.minimum_value).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                                    <td>{{ ingredient.note or '-' }}</td>
+                                    <td>
+                                        {% if ingredient.is_below_minimum and ingredient.is_active %}
+                                            <span class="badge badge-warning">Perlu Restock</span>
+                                        {% elif ingredient.is_active %}
+                                            <span class="badge badge-success">Aman</span>
+                                        {% else %}
+                                            <span class="badge badge-neutral">Nonaktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <details class="inline-editor">
+                                            <summary>Edit</summary>
+                                            <form method="post" action="{{ url_for('admin.ingredient_update', ingredient_id=ingredient.id) }}" class="inline-edit-form">
+                                                <label>Nama
+                                                    <input type="text" name="name" value="{{ ingredient.name }}" required>
+                                                </label>
+                                                <label>Satuan
+                                                    <input type="text" name="unit" value="{{ ingredient.unit }}" required>
+                                                </label>
+                                                <label>Stok
+                                                    <input type="number" name="current_stock" min="0" step="0.01" value="{{ ingredient.stock_value }}" required>
+                                                </label>
+                                                <label>Minimum
+                                                    <input type="number" name="minimum_stock" min="0" step="0.01" value="{{ ingredient.minimum_value }}" required>
+                                                </label>
+                                                <label>Catatan
+                                                    <textarea name="note" rows="2">{{ ingredient.note or '' }}</textarea>
+                                                </label>
+                                                <label class="inline-checkbox">
+                                                    <input type="checkbox" name="is_active" value="1" {% if ingredient.is_active %}checked{% endif %}>
+                                                    Aktif
+                                                </label>
+                                                <button type="submit">Simpan</button>
+                                            </form>
+                                            <form method="post" action="{{ url_for('admin.ingredient_delete', ingredient_id=ingredient.id) }}" onsubmit="return confirm('Hapus bahan baku {{ ingredient.name }}?')">
+                                                <button type="submit" class="link-button danger-link">Hapus</button>
+                                            </form>
+                                        </details>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7">Belum ada data bahan baku.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

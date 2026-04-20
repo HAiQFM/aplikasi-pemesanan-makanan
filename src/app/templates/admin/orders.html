@@ -13,6 +13,7 @@
             <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
             <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.ingredients') }}">Bahan Baku</a>
             <a class="is-active" href="{{ url_for('admin.orders') }}">Pesanan</a>
             <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
                 <button type="submit" class="nav-logout">Logout Admin</button>
@@ -57,12 +58,14 @@
                                             Cash / COD
                                         {% elif order.payment_method == "transfer" %}
                                             Transfer Bank
+                                        {% elif order.payment_method == "qris" %}
+                                            QRIS
                                         {% else %}
                                             E-Wallet
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if order.payment_method in ["transfer", "ewallet"] %}
+                                        {% if order.payment_method in ["transfer", "ewallet", "qris"] %}
                                             {% if order.payment_verification == "verified" %}
                                                 <span class="badge badge-success">Terverifikasi</span>
                                             {% else %}
@@ -112,7 +115,7 @@
                 </table>
             </div>
         </section>
-</main>
+    </main>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>

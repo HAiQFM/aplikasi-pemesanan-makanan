@@ -303,6 +303,35 @@
       color: #0f6a39;
       letter-spacing: 0.2px;
     }
+    .customer-chip {
+      background: #f8fcf9;
+      border: 1px solid #dcefe1;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .customer-chip span {
+      display: block;
+      color: #4d6b5e;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
+    .customer-chip strong {
+      font-size: 0.98rem;
+      color: #0b2e20;
+    }
+    .payment-qr {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .payment-qr img {
+      width: min(100%, 210px);
+      border-radius: 16px;
+      border: 1px solid #cfe8d2;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 10px 20px rgba(15, 106, 57, 0.08);
+    }
     .proof-note {
       margin: 6px 0 0;
       color: #4d6b5e;
@@ -355,8 +384,11 @@
     <p class="desc">Lengkapi detail pengiriman lalu konfirmasi pesanan.</p>
     <form method="post" action="{{ url_for('order.checkout') }}" enctype="multipart/form-data">
       <div>
-        <label for="customer_name">Nama Penerima</label>
-        <input id="customer_name" name="customer_name" type="text" placeholder="Nama lengkap" value="{{ customer_name or '' }}" required />
+        <label>Nama Pemesan</label>
+        <div class="customer-chip">
+          <span>Diambil otomatis dari akun login</span>
+          <strong>{{ customer_name or 'Pelanggan' }}</strong>
+        </div>
       </div>
       <div>
         <label for="address">Alamat Pengiriman</label>
@@ -369,15 +401,19 @@
           <option value="cash">Cash / COD</option>
           <option value="transfer">Transfer Bank</option>
           <option value="ewallet">E-Wallet</option>
+          <option value="qris">QRIS</option>
         </select>
       </div>
       <div class="payment-info" id="payment_info" hidden>
         <p id="payment_text" style="margin: 0;"></p>
+        <div class="payment-qr" id="qris_panel" hidden>
+          <img src="{{ url_for('static', filename=qris_image) }}" alt="Kode QRIS untuk pembayaran">
+        </div>
       </div>
       <div id="proof_wrapper" hidden>
         <label for="payment_proof">Bukti Pembayaran</label>
         <input id="payment_proof" name="payment_proof" type="file" accept=".png,.jpg,.jpeg,.pdf" />
-        <p class="proof-note">Wajib upload untuk transfer bank / e-wallet. Format: PNG, JPG, JPEG, PDF.</p>
+        <p class="proof-note">Wajib upload untuk transfer bank, e-wallet, atau QRIS. Format: PNG, JPG, JPEG, PDF.</p>
       </div>
       <input id="order_total" name="order_total" type="hidden" value="0" />
       <input id="checkout_items" name="checkout_items" type="hidden" value="[]" />
@@ -394,6 +430,7 @@
       var paymentText = document.getElementById("payment_text");
       var proofWrapper = document.getElementById("proof_wrapper");
       var proofInput = document.getElementById("payment_proof");
+      var qrisPanel = document.getElementById("qris_panel");
 
       function updatePaymentUI() {
         var method = paymentMethod.value;
@@ -401,6 +438,7 @@
           paymentInfo.hidden = true;
           proofWrapper.hidden = true;
           proofInput.required = false;
+          qrisPanel.hidden = true;
           paymentText.textContent = "";
           return;
         }
@@ -410,15 +448,23 @@
           paymentText.innerHTML = "Pembayaran dilakukan saat pesanan sampai (COD).";
           proofWrapper.hidden = true;
           proofInput.required = false;
+          qrisPanel.hidden = true;
           return;
         }
 
         paymentInfo.hidden = false;
         proofWrapper.hidden = false;
         proofInput.required = true;
+        qrisPanel.hidden = true;
 
         if (method === "transfer") {
           paymentText.innerHTML = "Transfer ke rekening: <strong>{{ transfer_account }}</strong>.";
+          return;
+        }
+
+        if (method === "qris") {
+          paymentText.innerHTML = "Scan kode <strong>QRIS</strong> berikut lalu unggah bukti pembayaran Anda.";
+          qrisPanel.hidden = false;
           return;
         }
 

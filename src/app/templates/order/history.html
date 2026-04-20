@@ -212,13 +212,15 @@
                     Cash / COD
                   {% elif order.payment_method == "transfer" %}
                     Transfer Bank
+                  {% elif order.payment_method == "qris" %}
+                    QRIS
                   {% else %}
                     E-Wallet
                   {% endif %}
                 </td>
                 <td><span class="status-pill">{{ order.status }}</span></td>
                 <td>
-                  {% if order.payment_method in ["transfer", "ewallet"] %}
+                  {% if order.payment_method in ["transfer", "ewallet", "qris"] %}
                     {% if order.payment_proof_path %}
                       <a class="proof-link" href="{{ url_for('static', filename=order.payment_proof_path) }}" target="_blank">Lihat Bukti</a>
                       {% if order.payment_verification == "pending" %}
