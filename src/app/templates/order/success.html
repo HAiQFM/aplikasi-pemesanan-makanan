@@ -143,6 +143,8 @@
             Cash / COD
           {% elif order.payment_method == "transfer" %}
             Transfer Bank
+          {% elif order.payment_method == "qris" %}
+            QRIS
           {% else %}
             E-Wallet
           {% endif %}
