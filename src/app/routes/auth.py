@@ -111,7 +111,7 @@ def login():
             return redirect(url_for("admin.dashboard"))
 
         flash("Login berhasil.", "success")
-        return redirect(url_for("order.history"))
+        return redirect(url_for("main.index"))
 
     return render_template("auth/login.html")
 

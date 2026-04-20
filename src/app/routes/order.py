@@ -1,13 +1,13 @@
 """
-routes/order.py — Endpoint checkout, riwayat, dan upload bukti bayar.
+routes/order.py - Endpoint checkout, riwayat, dan upload bukti bayar.
 
-Perubahan dari versi JSON:
-  - create_order() sekarang menerima user_id (FK ke users) untuk user yang login
-  - Tamu (guest) tetap bisa checkout tanpa akun — user_id=None di DB
+Perubahan utama:
+  - checkout memakai identitas akun yang sedang login
+  - metode pembayaran mendukung cash, transfer, ewallet, dan qris
 """
 
-import os
 import json
+import os
 from pathlib import Path
 
 from flask import (
@@ -28,6 +28,7 @@ order_bp = Blueprint("order", __name__, url_prefix="/order")
 ALLOWED_PROOF_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
 TRANSFER_ACCOUNT = "BANK BRI 4371 0103 3691 530"
 EWALLET_ACCOUNT = "DANA +62 813 1291 0980"
+QRIS_IMAGE = "images/qris.jpg"
 
 
 def _parse_total_amount(raw_value: str) -> int:
@@ -36,25 +37,14 @@ def _parse_total_amount(raw_value: str) -> int:
 
 
 def _current_customer_key() -> str:
-    """
-    Kembalikan identifier pelanggan: email jika login, atau guest key.
-    Digunakan sebagai customer_email di tabel orders.
-    """
-    user_email = session.get("user_email", "").strip().lower()
-    if user_email:
-        return user_email
-    guest_key = session.get("guest_customer_key")
-    if not guest_key:
-        guest_key = f"guest-{os.urandom(8).hex()}@local"
-        session["guest_customer_key"] = guest_key
-    return guest_key
+    return session.get("user_email", "").strip().lower()
+
+
+def _current_customer_name() -> str:
+    return session.get("user_name", "").strip()
 
 
 def _current_user_id() -> int | None:
-    """
-    Kembalikan user_id dari session (untuk FK ke tabel users).
-    Return None untuk tamu yang tidak login.
-    """
     if session.get("is_logged_in"):
         return session.get("user_id")
     return None
@@ -108,50 +98,52 @@ def _save_payment_proof(order_id: int, uploaded_file) -> str:
 
     filename = secure_filename(uploaded_file.filename or "")
     extension = filename.rsplit(".", 1)[1].lower()
-    stored_name = f"order_{order_id}_{session.get('user_email', 'guest').replace('@', '_at_')}.{extension}"
+    stored_name = (
+        f"order_{order_id}_{session.get('user_email', 'guest').replace('@', '_at_')}"
+        f".{extension}"
+    )
     destination = uploads_dir / stored_name
     uploaded_file.save(destination)
     return os.path.join("uploads", "payment-proofs", stored_name).replace("\\", "/")
 
 
-# ── CHECKOUT (CREATE) ─────────────────────────────────────────────────────────
-
-
 @order_bp.route("/checkout", methods=["GET", "POST"])
 def checkout():
-    """
-    CREATE — Simpan pesanan baru ke tabel `orders` + `order_items`.
+    if not session.get("is_logged_in"):
+        flash("Silakan login terlebih dahulu untuk melanjutkan checkout.", "error")
+        return redirect(url_for("auth.login"))
 
-    Sebelumnya: append ke orders.json
-    Sekarang  : INSERT INTO orders (...) + INSERT INTO order_items (...)
-    """
     if request.method == "POST":
-        customer_name = request.form.get("customer_name", "").strip()
+        customer_name = _current_customer_name()
         address = request.form.get("address", "").strip()
         payment_method = request.form.get("payment_method", "").strip().lower()
         total_amount = _parse_total_amount(request.form.get("order_total", "0"))
         order_items = _parse_checkout_items(request.form.get("checkout_items", ""))
 
-        if payment_method not in {"cash", "transfer", "ewallet"}:
+        if not customer_name:
+            flash("Nama akun belum tersedia. Silakan login ulang.", "error")
+            return redirect(url_for("auth.login"))
+
+        if payment_method not in {"cash", "transfer", "ewallet", "qris"}:
             flash("Metode pembayaran tidak valid.", "error")
             return redirect(url_for("order.checkout"))
 
         payment_proof = request.files.get("payment_proof")
-        requires_proof = payment_method in {"transfer", "ewallet"}
+        requires_proof = payment_method in {"transfer", "ewallet", "qris"}
         if requires_proof:
             if not payment_proof or not payment_proof.filename:
                 flash(
-                    "Bukti pembayaran wajib diunggah untuk transfer bank atau e-wallet.",
+                    "Bukti pembayaran wajib diunggah untuk transfer bank, e-wallet, atau QRIS.",
                     "error",
                 )
                 return redirect(url_for("order.checkout"))
             if not _is_allowed_proof_file(payment_proof.filename):
                 flash(
-                    "Format bukti pembayaran harus PNG, JPG, JPEG, atau PDF.", "error"
+                    "Format bukti pembayaran harus PNG, JPG, JPEG, atau PDF.",
+                    "error",
                 )
                 return redirect(url_for("order.checkout"))
 
-        # CREATE — kirim user_id agar pesanan terhubung ke akun (None untuk tamu)
         order = create_order(
             customer_name=customer_name,
             customer_email=_current_customer_key(),
@@ -160,12 +152,11 @@ def checkout():
             total_amount=total_amount,
             items=order_items,
             payment_proof_path=None,
-            user_id=_current_user_id(),  # ← FK ke users.id
+            user_id=_current_user_id(),
         )
 
         if requires_proof and payment_proof:
             proof_path = _save_payment_proof(order["id"], payment_proof)
-            # UPDATE — simpan path bukti bayar ke DB
             update_order(
                 order["id"],
                 payment_proof_path=proof_path,
@@ -182,6 +173,11 @@ def checkout():
                 f"Pembayaran transfer diterima. Rekening tujuan: {TRANSFER_ACCOUNT}. Menunggu verifikasi admin.",
                 "info",
             )
+        elif payment_method == "qris":
+            flash(
+                "Pembayaran QRIS diterima. Silakan scan QR lalu unggah bukti pembayaran. Menunggu verifikasi admin.",
+                "info",
+            )
         else:
             flash(
                 f"Pembayaran e-wallet diterima. Nomor tujuan: {EWALLET_ACCOUNT}. Menunggu verifikasi admin.",
@@ -191,43 +187,27 @@ def checkout():
         session["latest_order_id"] = order["id"]
         return redirect(url_for("order.success"))
 
-    customer_name = ""
-    if session.get("is_logged_in"):
-        customer_name = session.get("user_name", "")
     return render_template(
         "order/checkout.html",
-        customer_name=customer_name,
+        customer_name=_current_customer_name(),
         transfer_account=TRANSFER_ACCOUNT,
         ewallet_account=EWALLET_ACCOUNT,
+        qris_image=QRIS_IMAGE,
     )
-
-
-# ── RIWAYAT PESANAN (READ) ────────────────────────────────────────────────────
 
 
 @order_bp.route("/history", methods=["GET"])
 def history():
-    """
-    READ — Ambil riwayat pesanan dari DB berdasarkan customer_email.
+    if not session.get("is_logged_in"):
+        flash("Silakan login untuk melihat riwayat pesanan.", "error")
+        return redirect(url_for("auth.login"))
 
-    Sebelumnya: filter list dari orders.json
-    Sekarang  : SELECT * FROM orders WHERE customer_email = ? ORDER BY created_at DESC
-    """
     orders = list_orders(customer_email=_current_customer_key())
     return render_template("order/history.html", orders=orders)
 
 
-# ── UPLOAD BUKTI BAYAR (UPDATE) ───────────────────────────────────────────────
-
-
 @order_bp.route("/<int:order_id>/upload-proof", methods=["POST"])
 def upload_payment_proof(order_id: int):
-    """
-    UPDATE — Perbarui payment_proof_path di tabel `orders`.
-
-    Sebelumnya: update dict di orders.json
-    Sekarang  : UPDATE orders SET payment_proof_path = ?, updated_at = NOW() WHERE id = ?
-    """
     if not session.get("is_logged_in"):
         flash("Silakan login terlebih dahulu.", "error")
         return redirect(url_for("auth.login"))
@@ -239,8 +219,8 @@ def upload_payment_proof(order_id: int):
         return redirect(url_for("order.history"))
 
     payment_method = order.get("payment_method")
-    if payment_method not in {"transfer", "ewallet"}:
-        flash("Bukti pembayaran hanya untuk transfer atau e-wallet.", "error")
+    if payment_method not in {"transfer", "ewallet", "qris"}:
+        flash("Bukti pembayaran hanya untuk transfer, e-wallet, atau QRIS.", "error")
         return redirect(url_for("order.history"))
 
     payment_proof = request.files.get("payment_proof")
@@ -258,9 +238,6 @@ def upload_payment_proof(order_id: int):
     )
     flash("Bukti pembayaran berhasil diunggah. Menunggu verifikasi admin.", "success")
     return redirect(url_for("order.history"))
-
-
-# ── HALAMAN SUKSES ────────────────────────────────────────────────────────────
 
 
 @order_bp.route("/success", methods=["GET"])
