@@ -1,84 +1,67 @@
-import json
-import tempfile
-
-from run import app
+import io
 
 
-def get_client():
-    order_store = tempfile.NamedTemporaryFile(delete=False)
-    order_store.close()
-    with open(order_store.name, "w", encoding="utf-8") as handle:
-        json.dump([], handle)
-    app.config.update(TESTING=True, WTF_CSRF_ENABLED=False, ORDER_STORE_FILE=order_store.name)
-    return app.test_client()
+def login_customer(client):
+    return client.post(
+        "/auth/login",
+        data={"email": "firas@mail.com", "password": "secret123"},
+    )
 
 
-def test_checkout_page_loads():
-    client = get_client()
-    response = client.get('/order/checkout')
-    assert response.status_code == 200
-
-
-def test_order_history_page_loads():
-    client = get_client()
-    response = client.get('/order/history')
-    assert response.status_code == 200
-
-
-def test_order_success_page_loads():
-    client = get_client()
-    response = client.get('/order/success')
-    assert response.status_code == 200
-
-
-def test_checkout_post_redirects_to_success():
-    client = get_client()
-    response = client.post('/order/checkout', data={'payment_method': 'cash'})
+def test_checkout_requires_login(client):
+    response = client.get("/order/checkout")
     assert response.status_code == 302
-    assert response.headers['Location'].endswith('/order/success')
+    assert response.headers["Location"].endswith("/auth/login")
 
 
-def test_checkout_name_prefilled_after_login():
-    client = get_client()
-    client.post('/auth/register', data={'name': 'Firas User', 'email': 'firas@mail.com', 'password': 'secret123'})
-    client.post('/auth/login', data={'email': 'firas@mail.com', 'password': 'secret123'})
-
-    response = client.get('/order/checkout')
+def test_checkout_page_shows_logged_in_name_without_input(client):
+    login_customer(client)
+    response = client.get("/order/checkout")
     assert response.status_code == 200
-    assert b'value="Firas User"' in response.data
+    assert b"Nama Pemesan" in response.data
+    assert b"Firas User" in response.data
+    assert b'name="customer_name"' not in response.data
 
 
-def test_checkout_name_empty_when_not_logged_in():
-    client = get_client()
-    response = client.get('/order/checkout')
-    assert response.status_code == 200
-    assert b'value=""' in response.data
+def test_checkout_qris_creates_order_with_uploaded_proof(client, app):
+    from app.models import Order
 
-
-def test_checkout_post_preserves_item_details():
-    client = get_client()
+    login_customer(client)
     response = client.post(
-        '/order/checkout',
+        "/order/checkout",
         data={
-            'customer_name': 'Firas',
-            'address': 'Jalan Mawar 123',
-            'payment_method': 'cash',
-            'order_total': '40000',
-            'checkout_items': json.dumps([
-                {
-                    'name': 'Ayam Geprek',
-                    'qty': 1,
-                    'price': 28000,
-                    'details': [{'label': 'Sambal', 'value': 'Sambal Matah'}],
-                }
-            ]),
+            "address": "Jalan Mawar 123",
+            "payment_method": "qris",
+            "order_total": "13000",
+            "checkout_items": '[{"name":"Nasi Ayam Geprek","qty":1,"price":13000,"details":[]}]',
+            "payment_proof": (io.BytesIO(b"fake-image"), "bukti.png"),
         },
+        content_type="multipart/form-data",
     )
 
     assert response.status_code == 302
+    assert response.headers["Location"].endswith("/order/success")
 
-    with open(app.config['ORDER_STORE_FILE'], encoding='utf-8') as handle:
-        orders = json.load(handle)
+    with app.app_context():
+        order = Order.query.first()
+        assert order is not None
+        assert order.customer_name == "Firas User"
+        assert order.payment_method == "qris"
+        assert order.payment_proof_path is not None
 
-    assert len(orders) == 1
-    assert orders[0]['items'][0]['details'] == [{'label': 'Sambal', 'value': 'Sambal Matah'}]
+
+def test_order_history_page_loads_after_login(client):
+    login_customer(client)
+    response = client.get("/order/history")
+    assert response.status_code == 200
+
+
+def test_admin_ingredients_page_loads(client):
+    client.post(
+        "/auth/login",
+        data={"email": "admin@test.local", "password": "Admin@Secure123"},
+    )
+    response = client.get("/admin/ingredients")
+    assert response.status_code == 200
+    assert b"Stok Bahan Baku" in response.data
+    assert b"Dada Ayam" in response.data

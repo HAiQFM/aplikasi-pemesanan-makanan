@@ -32,6 +32,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `order_items`;
 DROP TABLE IF EXISTS `orders`;
+DROP TABLE IF EXISTS `ingredients`;
 DROP TABLE IF EXISTS `carts`;
 DROP TABLE IF EXISTS `menus`;
 DROP TABLE IF EXISTS `categories`;
@@ -118,7 +119,33 @@ CREATE TABLE `menus` (
 
 
 -- ============================================================
---  TABEL 4: carts
+--  TABEL 4: ingredients
+--  Menyimpan stok bahan baku dan batas minimum restock.
+-- ============================================================
+
+CREATE TABLE `ingredients` (
+    `id`            INT             NOT NULL AUTO_INCREMENT,
+    `name`          VARCHAR(120)    NOT NULL                    COMMENT 'Nama bahan baku',
+    `unit`          VARCHAR(30)     NOT NULL DEFAULT 'pcs'      COMMENT 'Satuan stok',
+    `current_stock` DECIMAL(10,2)   NOT NULL DEFAULT 0.00       COMMENT 'Stok tersedia saat ini',
+    `minimum_stock` DECIMAL(10,2)   NOT NULL DEFAULT 0.00       COMMENT 'Batas minimum untuk notifikasi',
+    `note`          VARCHAR(255)        NULL                    COMMENT 'Catatan penggunaan bahan baku',
+    `is_active`     TINYINT(1)      NOT NULL DEFAULT 1          COMMENT '1=aktif, 0=nonaktif',
+    `created_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                                      ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (`id`),
+    UNIQUE  KEY `uq_ingredients_name` (`name`),
+    INDEX   `ix_ingredients_name`     (`name`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='Stok bahan baku';
+
+
+-- ============================================================
+--  TABEL 5: carts
 --  Keranjang belanja per pengguna (server-side).
 --  Relasi: carts.user_id → users.id (CASCADE DELETE)
 --          carts.menu_id → menus.id (CASCADE DELETE)
@@ -154,7 +181,7 @@ CREATE TABLE `carts` (
 
 
 -- ============================================================
---  TABEL 5: orders
+--  TABEL 6: orders
 --  Setiap transaksi pesanan.
 --  user_id NULL → pesanan tamu (guest) tanpa akun.
 --  Data pelanggan didenormalisasi sebagai snapshot saat checkout.
@@ -193,7 +220,7 @@ CREATE TABLE `orders` (
 
 
 -- ============================================================
---  TABEL 6: order_items
+--  TABEL 7: order_items
 --  Detail item dalam setiap pesanan (one-to-many ke orders).
 --  Data menu didenormalisasi: menu_name & unit_price adalah
 --  snapshot saat checkout — tidak berubah walau admin edit harga.
@@ -230,6 +257,12 @@ CREATE TABLE `order_items` (
 INSERT INTO `categories` (`name`, `description`) VALUES
     ('Paket Ayam', 'Paket nasi dengan lauk ayam pilihan'),
     ('Minuman',    'Minuman segar dan hangat');
+
+INSERT INTO `ingredients` (`name`, `unit`, `current_stock`, `minimum_stock`, `note`, `is_active`) VALUES
+    ('Beras',      'kg',    25.00,   8.00, 'Bahan utama nasi', 1),
+    ('Dada Ayam',  'kg',     4.00,   5.00, 'Untuk ayam geprek, bakar, dan penyet', 1),
+    ('Minyak',     'liter',  6.00,   3.00, 'Untuk proses goreng dan tumis', 1),
+    ('Teh',        'gram', 500.00, 150.00, 'Untuk minuman teh', 1);
 
 
 -- ── Item Menu ──────────────────────────────────────────────
