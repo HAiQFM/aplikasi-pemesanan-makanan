@@ -1,15 +1,10 @@
 """
-routes/admin.py — Panel administrasi: order management + menu CRUD.
-
-Perubahan dari versi stub:
-  - Menu CRUD (add/edit/delete) sekarang benar-benar menyimpan ke tabel `menus`
-  - Kategori dapat dikelola dari tabel `categories`
-  - Semua order management sudah otomatis via DB melalui order_store.py
+routes/admin.py - Panel administrasi untuk menu, kategori, stok bahan baku, dan pesanan.
 """
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from app.models import Category, Menu, db
+from app.models import Category, Ingredient, Menu, db
 from app.services.order_store import (
     STATUS_LABELS,
     admin_sales_overview,
@@ -23,15 +18,23 @@ from app.services.order_store import (
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+def _safe_float(raw_value: str, fallback: float = 0.0) -> float:
+    try:
+        return float(str(raw_value).strip() or fallback)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def _low_stock_ingredients() -> list[Ingredient]:
+    ingredients = Ingredient.query.filter_by(is_active=True).order_by(Ingredient.name).all()
+    return [ingredient for ingredient in ingredients if ingredient.is_below_minimum]
+
+
 @admin_bp.before_request
 def require_admin():
-    """Guard: hanya akun dengan role='admin' yang boleh akses /admin/*"""
     if session.get("user_role") != "admin":
         flash("Akses admin hanya untuk akun admin.", "error")
         return redirect(url_for("auth.login"))
-
-
-# ── DASHBOARD ─────────────────────────────────────────────────────────────────
 
 
 @admin_bp.route("/", methods=["GET"])
@@ -42,29 +45,32 @@ def dashboard():
     )
     sales_report = daily_sales_report(limit=7)
     sales_overview = admin_sales_overview(transaction_limit=10, menu_limit=10)
+    low_stock_items = _low_stock_ingredients()
+    active_ingredients = Ingredient.query.filter_by(is_active=True).count()
+
     return render_template(
         "admin/dashboard.html",
+        total_menu=Menu.query.count(),
+        total_category=Category.query.count(),
         total_order=len(orders),
         pending_order=pending_payment_count,
         recent_orders=orders[:5],
         sales_report=sales_report,
         sales_overview=sales_overview,
+        total_ingredient=active_ingredients,
+        low_stock_count=len(low_stock_items),
+        low_stock_items=low_stock_items[:6],
     )
-
-
-# ── MENU CRUD ─────────────────────────────────────────────────────────────────
 
 
 @admin_bp.route("/menus", methods=["GET"])
 def menu_list():
-    """READ — Daftar semua menu dari DB."""
     menus = Menu.query.join(Category).order_by(Category.name, Menu.name).all()
     return render_template("admin/menu_list.html", menus=menus)
 
 
 @admin_bp.route("/menus/add", methods=["GET", "POST"])
 def menu_add():
-    """CREATE — Tambah menu baru ke tabel `menus`."""
     categories = Category.query.order_by(Category.name).all()
 
     if request.method == "POST":
@@ -85,7 +91,6 @@ def menu_add():
             flash("Format harga tidak valid.", "error")
             return render_template("admin/menu_add.html", categories=categories)
 
-        # Cek duplikat nama
         if Menu.query.filter_by(name=name).first():
             flash(f"Menu dengan nama '{name}' sudah ada.", "error")
             return render_template("admin/menu_add.html", categories=categories)
@@ -109,7 +114,6 @@ def menu_add():
 
 @admin_bp.route("/menus/<int:menu_id>/edit", methods=["GET", "POST"])
 def menu_edit(menu_id: int):
-    """UPDATE — Edit menu berdasarkan ID."""
     menu = Menu.query.get_or_404(menu_id)
     categories = Category.query.order_by(Category.name).all()
 
@@ -138,7 +142,6 @@ def menu_edit(menu_id: int):
 
 @admin_bp.route("/menus/<int:menu_id>/delete", methods=["POST"])
 def menu_delete(menu_id: int):
-    """DELETE — Hapus menu dari DB (termasuk cart items terkait via cascade)."""
     menu = Menu.query.get_or_404(menu_id)
     name = menu.name
     db.session.delete(menu)
@@ -147,12 +150,8 @@ def menu_delete(menu_id: int):
     return redirect(url_for("admin.menu_list"))
 
 
-# ── KATEGORI CRUD ─────────────────────────────────────────────────────────────
-
-
 @admin_bp.route("/categories", methods=["GET", "POST"])
 def categories():
-    """CREATE + READ — Kelola kategori menu."""
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         description = request.form.get("description", "").strip()
@@ -173,7 +172,6 @@ def categories():
 
 @admin_bp.route("/categories/<int:cat_id>/delete", methods=["POST"])
 def category_delete(cat_id: int):
-    """DELETE — Hapus kategori (akan gagal jika masih ada menu yang menggunakannya)."""
     cat = Category.query.get_or_404(cat_id)
     if cat.menus:
         flash(
@@ -188,26 +186,113 @@ def category_delete(cat_id: int):
     return redirect(url_for("admin.categories"))
 
 
-# ── ORDER MANAGEMENT ──────────────────────────────────────────────────────────
+@admin_bp.route("/ingredients", methods=["GET", "POST"])
+def ingredients():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        unit = request.form.get("unit", "").strip() or "pcs"
+        current_stock = _safe_float(request.form.get("current_stock", "0"))
+        minimum_stock = _safe_float(request.form.get("minimum_stock", "0"))
+        note = request.form.get("note", "").strip()
+
+        if not name:
+            flash("Nama bahan baku wajib diisi.", "error")
+            return redirect(url_for("admin.ingredients"))
+
+        existing = Ingredient.query.filter(
+            db.func.lower(Ingredient.name) == name.lower()
+        ).first()
+        if existing:
+            flash(f"Bahan baku '{name}' sudah ada.", "error")
+            return redirect(url_for("admin.ingredients"))
+
+        ingredient = Ingredient(
+            name=name,
+            unit=unit,
+            current_stock=current_stock,
+            minimum_stock=minimum_stock,
+            note=note or None,
+        )
+        db.session.add(ingredient)
+        db.session.commit()
+        flash(f"Bahan baku '{name}' berhasil ditambahkan.", "success")
+        return redirect(url_for("admin.ingredients"))
+
+    ingredients_list = Ingredient.query.order_by(Ingredient.name).all()
+    low_stock_items = [item for item in ingredients_list if item.is_below_minimum]
+    return render_template(
+        "admin/ingredients.html",
+        ingredients=ingredients_list,
+        low_stock_items=low_stock_items,
+    )
+
+
+@admin_bp.route("/ingredients/<int:ingredient_id>/update", methods=["POST"])
+def ingredient_update(ingredient_id: int):
+    ingredient = Ingredient.query.get_or_404(ingredient_id)
+    name = request.form.get("name", ingredient.name).strip()
+
+    if not name:
+        flash("Nama bahan baku wajib diisi.", "error")
+        return redirect(url_for("admin.ingredients"))
+
+    duplicate = Ingredient.query.filter(
+        db.func.lower(Ingredient.name) == name.lower(),
+        Ingredient.id != ingredient.id,
+    ).first()
+    if duplicate:
+        flash(f"Nama bahan baku '{name}' sudah digunakan.", "error")
+        return redirect(url_for("admin.ingredients"))
+
+    ingredient.name = name
+    ingredient.unit = request.form.get("unit", ingredient.unit).strip() or "pcs"
+    ingredient.current_stock = _safe_float(
+        request.form.get("current_stock", ingredient.current_stock),
+        ingredient.stock_value,
+    )
+    ingredient.minimum_stock = _safe_float(
+        request.form.get("minimum_stock", ingredient.minimum_stock),
+        ingredient.minimum_value,
+    )
+    ingredient.note = request.form.get("note", ingredient.note or "").strip() or None
+    ingredient.is_active = request.form.get("is_active") == "1"
+    db.session.commit()
+
+    if ingredient.is_below_minimum and ingredient.is_active:
+        flash(
+            f"Stok '{ingredient.name}' berada di bawah batas minimum. Segera lakukan restock.",
+            "warning",
+        )
+    else:
+        flash(f"Data bahan baku '{ingredient.name}' berhasil diperbarui.", "success")
+    return redirect(url_for("admin.ingredients"))
+
+
+@admin_bp.route("/ingredients/<int:ingredient_id>/delete", methods=["POST"])
+def ingredient_delete(ingredient_id: int):
+    ingredient = Ingredient.query.get_or_404(ingredient_id)
+    name = ingredient.name
+    db.session.delete(ingredient)
+    db.session.commit()
+    flash(f"Bahan baku '{name}' berhasil dihapus.", "info")
+    return redirect(url_for("admin.ingredients"))
 
 
 @admin_bp.route("/orders", methods=["GET"])
 def orders():
-    """READ — Daftar semua pesanan dari DB."""
     all_orders = list_orders()
     return render_template("admin/orders.html", orders=all_orders)
 
 
 @admin_bp.route("/orders/<int:order_id>/verify-payment", methods=["POST"])
 def verify_payment(order_id: int):
-    """UPDATE — Verifikasi pembayaran transfer/e-wallet."""
     order = get_order(order_id)
     if not order:
         flash("Pesanan tidak ditemukan.", "error")
         return redirect(url_for("admin.orders"))
 
-    if order.get("payment_method") not in {"transfer", "ewallet"}:
-        flash("Verifikasi pembayaran hanya untuk transfer/e-wallet.", "error")
+    if order.get("payment_method") not in {"transfer", "ewallet", "qris"}:
+        flash("Verifikasi pembayaran hanya untuk transfer, e-wallet, atau QRIS.", "error")
         return redirect(url_for("admin.orders"))
 
     if not order.get("payment_proof_path"):
@@ -225,7 +310,6 @@ def verify_payment(order_id: int):
 
 @admin_bp.route("/orders/<int:order_id>/status", methods=["POST"])
 def update_order_status(order_id: int):
-    """UPDATE — Ubah status pesanan."""
     status = request.form.get("status", "").strip()
     if status not in STATUS_LABELS:
         flash("Status pesanan tidak valid.", "error")
@@ -243,7 +327,6 @@ def update_order_status(order_id: int):
 
 @admin_bp.route("/orders/<int:order_id>/delete", methods=["POST"])
 def order_delete(order_id: int):
-    """DELETE — Hapus pesanan dari DB (beserta order_items via cascade)."""
     deleted = delete_order(order_id)
     if not deleted:
         flash("Pesanan tidak ditemukan atau sudah dihapus.", "error")
