@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initMenuAddForms();
   initCheckoutCart();
   initPromoBox();
+  initPasswordToggle();
+  initAnimatedBrandName(); // Initialize typewriter effect
 });
 
 function setActiveNavLink() {
@@ -558,4 +560,64 @@ function initPromoBox() {
   if (activePromoCode) {
     openBtn.textContent = "Apply (" + activePromoCode + ")";
   }
+}
+
+function initPasswordToggle() {
+  var toggleButtons = document.querySelectorAll(".password-toggle");
+  if (!toggleButtons.length) return;
+
+  toggleButtons.forEach(function (button) {
+    var inputId = button.getAttribute("data-target");
+    var input = document.getElementById(inputId);
+    if (!input) return;
+
+    var eyeIcon = button.querySelector(".eye-icon");
+    var eyeOffIcon = button.querySelector(".eye-off-icon");
+    var isVisible = false;
+
+    function updateIcons() {
+      if (isVisible) {
+        if (eyeIcon) eyeIcon.style.display = "none";
+        if (eyeOffIcon) eyeOffIcon.style.display = "block";
+        button.setAttribute("aria-label", "Sembunyikan password");
+        button.setAttribute("aria-pressed", "true");
+      } else {
+        if (eyeIcon) eyeIcon.style.display = "block";
+        if (eyeOffIcon) eyeOffIcon.style.display = "none";
+        button.setAttribute("aria-label", "Tampilkan password");
+        button.setAttribute("aria-pressed", "false");
+      }
+    }
+
+    button.addEventListener("click", function () {
+      isVisible = !isVisible;
+      input.type = isVisible ? "text" : "password";
+      updateIcons();
+      input.focus();
+    });
+
+    button.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        button.click();
+      }
+    });
+
+    // Initialize state
+    updateIcons();
+  });
+}
+
+/* ==========================================================================
+   Animated Brand Name - Typewriter Effect
+   ========================================================================== */
+function initAnimatedBrandName() {
+  var brandName = document.querySelector(".brand-name");
+  if (!brandName) return;
+
+  // Delay then add typewriter-active class to trigger CSS animation
+  // This creates the typing effect without manipulating text content
+  setTimeout(function () {
+    brandName.classList.add("typewriter-active");
+  }, 300);
 }
