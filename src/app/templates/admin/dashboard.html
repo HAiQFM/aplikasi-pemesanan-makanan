@@ -13,6 +13,7 @@
             <a class="is-active" href="{{ url_for('admin.dashboard') }}">Dashboard</a>
             <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
             <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.ingredients') }}">Bahan Baku</a>
             <a href="{{ url_for('admin.orders') }}">Pesanan</a>
             <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
                 <button type="submit" class="nav-logout">Logout Admin</button>
@@ -23,11 +24,11 @@
     <main class="dashboard-page">
         <section class="dashboard-hero">
             <p class="dashboard-eyebrow">Panel Kontrol</p>
-            <h2>Kelola Operasional Food Hall - Warung Nasi Teh Sarah</h2>
-            <p>Monitor menu, kategori, dan pesanan pelanggan dari satu tempat.</p>
+            <h2>Kelola operasional warung dari satu dashboard</h2>
+            <p>Monitor pesanan, menu, dan stok bahan baku tanpa perlu berpindah tampilan yang terlalu berbeda.</p>
             <div class="dashboard-hero-actions">
                 <a href="{{ url_for('admin.menu_add') }}">Tambah Menu</a>
-                <a href="{{ url_for('admin.orders') }}">Pantau Pesanan</a>
+                <a href="{{ url_for('admin.ingredients') }}">Kelola Bahan Baku</a>
             </div>
         </section>
 
@@ -48,6 +49,58 @@
                 <p>Pending</p>
                 <strong>{{ pending_order if pending_order is defined else 0 }}</strong>
             </article>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card report-card">
+                <p>Bahan Baku Aktif</p>
+                <strong>{{ total_ingredient if total_ingredient is defined else 0 }}</strong>
+            </article>
+            <article class="stat-card report-card {% if low_stock_count %}alert-card{% endif %}">
+                <p>Stok Minimum</p>
+                <strong>{{ low_stock_count if low_stock_count is defined else 0 }}</strong>
+            </article>
+        </section>
+
+        <section>
+            <div class="section-head">
+                <div>
+                    <h3>Notifikasi Stok Minimum</h3>
+                    <p class="section-subtitle">Bahan baku berikut perlu diperhatikan karena stoknya sudah menyentuh atau di bawah batas minimum.</p>
+                </div>
+                <a class="text-link" href="{{ url_for('admin.ingredients') }}">Buka halaman bahan baku</a>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bahan Baku</th>
+                            <th>Stok Saat Ini</th>
+                            <th>Minimum</th>
+                            <th>Satuan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if low_stock_items %}
+                            {% for item in low_stock_items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ "{:,.2f}".format(item.stock_value).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                                    <td>{{ "{:,.2f}".format(item.minimum_value).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                                    <td>{{ item.unit }}</td>
+                                    <td><span class="badge badge-warning">Perlu Restock</span></td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5">Semua bahan baku masih berada di atas batas minimum.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <section>
@@ -206,40 +259,43 @@
             <h3>Aksi Cepat</h3>
             <div class="quick-links">
                 <a href="{{ url_for('admin.menu_add') }}">Tambah menu baru</a>
-                <a href="{{ url_for('admin.menu_list') }}">Lihat & edit daftar menu</a>
+                <a href="{{ url_for('admin.menu_list') }}">Lihat dan edit daftar menu</a>
                 <a href="{{ url_for('admin.categories') }}">Kelola kategori</a>
+                <a href="{{ url_for('admin.ingredients') }}">Update stok bahan baku</a>
                 <a href="{{ url_for('admin.orders') }}">Lihat pesanan terbaru</a>
             </div>
         </section>
 
         <section>
             <h3>Pesanan Terbaru</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID Pesanan</th>
-                        <th>Pelanggan</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if recent_orders is defined and recent_orders %}
-                        {% for order in recent_orders %}
-                            <tr>
-                                <td>#{{ order.id }}</td>
-                                <td>{{ order.customer_name if order.customer_name else 'Pelanggan' }}</td>
-                                <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
-                                <td>{{ order.status }}</td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
                         <tr>
-                            <td colspan="4">Belum ada data pesanan terbaru.</td>
+                            <th>ID Pesanan</th>
+                            <th>Pelanggan</th>
+                            <th>Total</th>
+                            <th>Status</th>
                         </tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if recent_orders is defined and recent_orders %}
+                            {% for order in recent_orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.customer_name if order.customer_name else 'Pelanggan' }}</td>
+                                    <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
+                                    <td>{{ order.status }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4">Belum ada data pesanan terbaru.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>

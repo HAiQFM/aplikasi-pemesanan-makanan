@@ -11,8 +11,9 @@
         <h1>Kelola Menu</h1>
         <nav>
             <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
-            <a href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
+            <a class="is-active" href="{{ url_for('admin.menu_list') }}">Kelola Menu</a>
             <a href="{{ url_for('admin.categories') }}">Kategori</a>
+            <a href="{{ url_for('admin.ingredients') }}">Bahan Baku</a>
             <a href="{{ url_for('admin.orders') }}">Pesanan</a>
             <form method="post" action="{{ url_for('auth.logout_admin') }}" class="nav-inline-form">
                 <button type="submit" class="nav-logout">Logout Admin</button>
@@ -22,51 +23,61 @@
 
     <main>
         <section>
-            <a href="{{ url_for('admin.menu_add') }}">+ Tambah Menu</a>
-        </section>
+            <div class="section-head">
+                <div>
+                    <h2>Daftar Menu</h2>
+                    <p class="section-subtitle">Kelola harga, kategori, dan status ketersediaan menu.</p>
+                </div>
+                <a class="pill-link" href="{{ url_for('admin.menu_add') }}">+ Tambah Menu</a>
+            </div>
 
-        <section>
-            <h2>Daftar Menu</h2>
-            <table border="1" cellpadding="8" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nama</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if menus %}
-                        {% for menu in menus %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
                         <tr>
-                            <td>{{ menu.id }}</td>
-                            <td>{{ menu.name }}</td>
-                            <td>{{ menu.category.name if menu.category else '-' }}</td>
-                            <td>Rp {{ "{:,.0f}".format(menu.price).replace(',', '.') }}</td>
-                            <td>{{ 'Tersedia' if menu.is_available else 'Tidak Tersedia' }}</td>
-                            <td>
-                                <a href="{{ url_for('admin.menu_edit', menu_id=menu.id) }}">Edit</a>
-                                &nbsp;|&nbsp;
-                                <form method="post" action="{{ url_for('admin.menu_delete', menu_id=menu.id) }}"
-                                      style="display:inline"
-                                      onsubmit="return confirm('Hapus menu {{ menu.name }}?')">
-                                    <button type="submit" style="background:none;border:none;color:red;cursor:pointer;padding:0">
-                                        Hapus
-                                    </button>
-                                </form>
-                            </td>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Kategori</th>
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
                         </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr><td colspan="6">Belum ada data menu. <a href="{{ url_for('admin.menu_add') }}">Tambah menu pertama</a>.</td></tr>
-                    {% endif %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% if menus %}
+                            {% for menu in menus %}
+                            <tr>
+                                <td>{{ menu.id }}</td>
+                                <td>{{ menu.name }}</td>
+                                <td>{{ menu.category.name if menu.category else '-' }}</td>
+                                <td>Rp {{ "{:,.0f}".format(menu.price).replace(',', '.') }}</td>
+                                <td>
+                                    {% if menu.is_available %}
+                                        <span class="badge badge-success">Tersedia</span>
+                                    {% else %}
+                                        <span class="badge badge-neutral">Tidak Tersedia</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a class="text-link" href="{{ url_for('admin.menu_edit', menu_id=menu.id) }}">Edit</a>
+                                        <form method="post" action="{{ url_for('admin.menu_delete', menu_id=menu.id) }}" onsubmit="return confirm('Hapus menu {{ menu.name }}?')">
+                                            <button type="submit" class="link-button danger-link">Hapus</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6">Belum ada data menu. <a href="{{ url_for('admin.menu_add') }}">Tambah menu pertama</a>.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </section>
-</main>
+    </main>
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>
