@@ -14,43 +14,76 @@
   data-is-logged-in="{{ 'true' if session.get('is_logged_in') else 'false' }}"
   data-login-url="{{ url_for('auth.login') }}"
 >
-  <header class="nav">
-    <div class="nav-inner">
-      <a class="brand" href="{{ url_for('main.index') }}">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall - Warung Nasi Teh Sarah Logo" />
-        <span>Food Hall - Warung Nasi Teh Sarah</span>
-      </a>
-      <nav class="nav-links">
-        <a href="{{ url_for('main.index') }}">Beranda</a>
-        <a href="{{ url_for('menu.index') }}">Menu</a>
-        <a href="{{ url_for('order.checkout') }}">Checkout</a>
-        <a href="{{ url_for('order.history') }}">Riwayat</a>
-        {% if session.get('is_logged_in') and session.get('user_role') == 'customer' %}
-          <span class="nav-user">Hi, {{ session.get('user_name', 'Pelanggan') }}</span>
-          <form method="post" action="{{ url_for('auth.logout') }}" class="nav-inline-form">
-            <button type="submit" class="nav-logout">Logout</button>
-          </form>
-        {% elif not session.get('is_logged_in') %}
-          <a href="{{ url_for('auth.login') }}">Login</a>
-          <a href="{{ url_for('auth.register') }}">Registrasi</a>
-        {% endif %}
-      </nav>
+  <div class="app-shell">
+    <aside class="nav-drawer" data-role="nav-drawer">
+      <div class="nav-drawer-inner">
+        <a class="brand brand-drawer" href="{{ url_for('main.index') }}">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall - Warung Nasi Teh Sarah Logo" />
+          <span>Food Hall - Warung Nasi Teh Sarah</span>
+        </a>
+        <nav class="nav-links">
+          <a href="{{ url_for('main.index') }}">Beranda</a>
+          <a href="{{ url_for('menu.index') }}">Menu</a>
+          <a href="{{ url_for('order.checkout') }}">Checkout</a>
+          <a href="{{ url_for('order.history') }}">Riwayat</a>
+          {% if session.get('is_logged_in') and session.get('user_role') == 'customer' %}
+            <span class="nav-user">Hi, {{ session.get('user_name', 'Pelanggan') }}</span>
+            <form method="post" action="{{ url_for('auth.logout') }}" class="nav-inline-form">
+              <button type="submit" class="nav-logout">Logout</button>
+            </form>
+          {% elif not session.get('is_logged_in') %}
+            <a href="{{ url_for('auth.login') }}">Login</a>
+            <a href="{{ url_for('auth.register') }}">Registrasi</a>
+          {% endif %}
+        </nav>
+      </div>
+    </aside>
+
+    <aside class="sidebar-right">
+      <div class="sidebar-content">
+        {% block sidebar %}{% endblock %}
+      </div>
+    </aside>
+
+    <div class="nav-overlay" data-role="nav-overlay" hidden></div>
+
+    <div class="app-main">
+      <header class="nav">
+        <div class="nav-inner">
+          <button
+            type="button"
+            class="nav-toggle"
+            data-role="nav-toggle"
+            aria-expanded="false"
+            aria-controls="nav-drawer"
+            aria-label="Buka navigasi"
+          >
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+            <span class="nav-toggle-line"></span>
+          </button>
+          <a class="brand brand-top" href="{{ url_for('main.index') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall - Warung Nasi Teh Sarah Logo" />
+            <span>Food Hall - Warung Nasi Teh Sarah</span>
+          </a>
+        </div>
+      </header>
+
+      <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class="flash-list">
+              {% for category, message in messages %}
+                <li class="flash flash-{{ category if category in ['success', 'info'] else 'message' }}">{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
     </div>
-  </header>
-
-  <main class="container">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul class="flash-list">
-          {% for category, message in messages %}
-            <li class="flash flash-{{ category if category in ['success', 'info'] else 'message' }}">{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-
-    {% block content %}{% endblock %}
-  </main>
+  </div>
   <div class="login-warning-modal" data-role="login-warning-modal" hidden>
     <div class="login-warning-backdrop" data-role="login-warning-close"></div>
     <div

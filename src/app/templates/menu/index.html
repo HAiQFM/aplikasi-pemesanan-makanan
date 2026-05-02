@@ -6,14 +6,19 @@
 <section class="menu-hero">
   <div>
     <p class="eyebrow">Food Hall - Warung Nasi Teh Sarah Menu</p>
-    <h1>Daftar Paket Ayam</h1>
-    <p class="hero-text">Pilih menu ayam favorit Anda lalu tentukan opsi sambal sesuai selera.</p>
+    <h1>Menu Paket, Makanan, dan Minuman</h1>
+    <p class="hero-text">Pesan paket ayam, pilih makanan ala carte, atau tambahkan minuman. Opsi sambal hanya tersedia untuk menu ayam satuan.</p>
   </div>
   <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Food Hall - Warung Nasi Teh Sarah Logo" />
 </section>
 
+<section class="menu-subhead">
+  <h2>Paket Ayam</h2>
+  <p>Pilih paket lengkap ayam dan nasi untuk pesanan praktis.</p>
+</section>
+
 <section class="menu-grid">
-  {% for item in menu_items %}
+  {% for item in package_items %}
     <article class="menu-card">
       <img class="menu-thumb" src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="{{ item.name }}" />
       <span class="menu-category">{{ item.category }}</span>
@@ -25,27 +30,85 @@
         class="menu-form js-menu-add-form"
         data-item-name="{{ item.name }}"
         data-item-price="{{ item.price_value }}"
+        data-item-image="{{ url_for('static', filename='images/' ~ item.image) }}"
       >
         <input type="hidden" name="menu_name" value="{{ item.name }}" />
-        <label for="spice-level-{{ loop.index }}">Tingkat Kepedasan</label>
-        <select
-          id="spice-level-{{ loop.index }}"
-          name="spice_level"
-          class="js-spice-level"
-          data-sambal-target="sambal-{{ loop.index }}"
-          required
-        >
-          <option value="Tanpa Pedas">Tanpa Pedas</option>
-          <option value="Sedang">Sedang</option>
-          <option value="Pedas">Pedas</option>
-          <option value="Pisah">Pisah</option>
-        </select>
-        <label for="sambal-{{ loop.index }}">Pilih Sambal</label>
-        <select id="sambal-{{ loop.index }}" name="sambal" disabled>
-          {% for sambal in sambal_options %}
-            <option value="{{ sambal }}">{{ sambal }}</option>
-          {% endfor %}
-        </select>
+        {% if item.supports_spice_level %}
+          <label for="spice-level-food-{{ loop.index }}">Tingkat Kepedasan</label>
+          <select
+            id="spice-level-food-{{ loop.index }}"
+            name="spice_level"
+            class="js-spice-level"
+            data-sambal-target="sambal-food-{{ loop.index }}"
+            required
+          >
+            <option value="Tanpa Pedas">Tanpa Pedas</option>
+            <option value="Sedang">Sedang</option>
+            <option value="Pedas">Pedas</option>
+            <option value="Pisah">Pisah</option>
+          </select>
+        {% endif %}
+        {% if item.supports_sambal %}
+          <label for="sambal-food-{{ loop.index }}">Pilih Sambal</label>
+          <select id="sambal-food-{{ loop.index }}" name="sambal" disabled>
+            {% for sambal in sambal_options %}
+              <option value="{{ sambal }}">{{ sambal }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
+        <div class="menu-footer">
+          <strong>{{ item.price }}</strong>
+          <button class="mini-btn" type="submit">Tambah</button>
+        </div>
+      </form>
+    </article>
+  {% endfor %}
+</section>
+
+<section class="menu-subhead">
+  <h2>Pilihan Makanan</h2>
+  <p>Pesan ayam dan nasi secara terpisah sesuai kebutuhan Anda.</p>
+</section>
+
+<section class="menu-grid">
+  {% for item in food_items %}
+    <article class="menu-card">
+      <img class="menu-thumb" src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="{{ item.name }}" />
+      <span class="menu-category">{{ item.category }}</span>
+      <h2>{{ item.name }}</h2>
+      <p>{{ item.desc }}</p>
+      <form
+        method="post"
+        action="{{ url_for('cart.add_to_cart') }}"
+        class="menu-form js-menu-add-form"
+        data-item-name="{{ item.name }}"
+        data-item-price="{{ item.price_value }}"
+        data-item-image="{{ url_for('static', filename='images/' ~ item.image) }}"
+      >
+        <input type="hidden" name="menu_name" value="{{ item.name }}" />
+        {% if item.supports_spice_level %}
+          <label for="spice-level-food-extra-{{ loop.index }}">Tingkat Kepedasan</label>
+          <select
+            id="spice-level-food-extra-{{ loop.index }}"
+            name="spice_level"
+            class="js-spice-level"
+            data-sambal-target="sambal-food-extra-{{ loop.index }}"
+            required
+          >
+            <option value="Tanpa Pedas">Tanpa Pedas</option>
+            <option value="Sedang">Sedang</option>
+            <option value="Pedas">Pedas</option>
+            <option value="Pisah">Pisah</option>
+          </select>
+        {% endif %}
+        {% if item.supports_sambal %}
+          <label for="sambal-food-extra-{{ loop.index }}">Pilih Sambal</label>
+          <select id="sambal-food-extra-{{ loop.index }}" name="sambal" disabled>
+            {% for sambal in sambal_options %}
+              <option value="{{ sambal }}">{{ sambal }}</option>
+            {% endfor %}
+          </select>
+        {% endif %}
         <div class="menu-footer">
           <strong>{{ item.price }}</strong>
           <button class="mini-btn" type="submit">Tambah</button>
@@ -73,11 +136,12 @@
         class="menu-form js-menu-add-form"
         data-item-name="{{ drink.name }}"
         data-item-price="{{ drink.price_value }}"
+        data-item-image="{{ url_for('static', filename='images/' ~ drink.image) }}"
       >
         <input type="hidden" name="menu_name" value="{{ drink.name }}" />
-        <label for="request-{{ loop.index }}">Request rasa/catatan</label>
+        <label for="request-drink-{{ loop.index }}">Request rasa/catatan</label>
         <input
-          id="request-{{ loop.index }}"
+          id="request-drink-{{ loop.index }}"
           name="request_rasa"
           type="text"
           placeholder="Contoh: less sugar, tambah es, tanpa gula"
