@@ -8,6 +8,7 @@ Perubahan dari versi hardcoded:
 """
 
 import re
+from random import shuffle
 from pathlib import Path
 
 from flask import Blueprint, current_app, render_template
@@ -56,6 +57,138 @@ def _menu_model_to_dict(menu: Menu) -> dict:
         "desc": menu.description or "",
         "image": _resolve_image_filename(menu.name, menu.image_url or "logo.png"),
         "is_available": menu.is_available,
+    }
+
+
+def _supports_sambal(item_name: str) -> bool:
+    normalized_name = (item_name or "").strip().lower()
+    return normalized_name.startswith("ayam ") or normalized_name.startswith("nasi ayam ")
+
+
+def _supports_spice_level(item_name: str) -> bool:
+    normalized_name = (item_name or "").strip().lower()
+    return normalized_name.startswith("ayam ") or normalized_name.startswith("nasi ayam ")
+
+
+def _build_menu_presentation(item: dict) -> dict:
+    normalized_name = (item.get("name") or "").strip().lower()
+    normalized_category = (item.get("category") or "").strip().lower()
+
+    item_copy = dict(item)
+    item_copy["supports_sambal"] = _supports_sambal(item_copy.get("name", ""))
+    item_copy["supports_spice_level"] = _supports_spice_level(item_copy.get("name", ""))
+    item_copy["supports_request"] = normalized_category == "minuman"
+    item_copy["item_kind"] = "lainnya"
+
+    if normalized_name.startswith("nasi ayam "):
+        item_copy["item_kind"] = "paket"
+    elif item_copy["supports_sambal"]:
+        item_copy["item_kind"] = "ayam"
+    elif normalized_name in {"nasi", "nasi putih"}:
+        item_copy["item_kind"] = "nasi"
+    elif normalized_category == "minuman":
+        item_copy["item_kind"] = "minuman"
+
+    return item_copy
+
+
+def _derive_alacarte_items(menu_items: list[dict]) -> list[dict]:
+    enriched_items = [dict(item) for item in menu_items]
+    existing_names = {
+        (item.get("name") or "").strip().lower()
+        for item in enriched_items
+        if (item.get("name") or "").strip()
+    }
+
+    has_rice_item = any(name in {"nasi", "nasi putih"} for name in existing_names)
+    if not has_rice_item:
+        enriched_items.append(
+            {
+                "name": "Nasi Putih",
+                "category": "Makanan",
+                "price": "Rp 4.000",
+                "price_value": 4000,
+                "desc": "Nasi putih hangat yang bisa dipesan terpisah.",
+                "image": _resolve_image_filename("Nasi Putih", "logo.png"),
+                "is_available": True,
+            }
+        )
+        existing_names.add("nasi putih")
+
+    for item in menu_items:
+        original_name = (item.get("name") or "").strip()
+        match = re.match(r"^nasi\s+(ayam.+)$", original_name, flags=re.IGNORECASE)
+        if not match:
+            continue
+
+        chicken_name = match.group(1).strip()
+        normalized_chicken_name = chicken_name.lower()
+        if normalized_chicken_name in existing_names:
+            continue
+
+        package_price = int(item.get("price_value", 0) or 0)
+        chicken_price = max(package_price - 4000, 5000)
+        enriched_items.append(
+            {
+                "name": chicken_name,
+                "category": "Makanan",
+                "price": f"Rp {chicken_price:,.0f}".replace(",", "."),
+                "price_value": chicken_price,
+                "desc": f"{item.get('desc', '').strip()} Tersedia juga dalam versi satuan tanpa nasi.",
+                "image": _resolve_image_filename(chicken_name, item.get("image", "logo.png")),
+                "is_available": item.get("is_available", True),
+            }
+        )
+        existing_names.add(normalized_chicken_name)
+
+    return [_build_menu_presentation(item) for item in enriched_items]
+
+
+def get_menu_sections(randomize_home: bool = False) -> dict[str, list[dict]]:
+    try:
+        all_menus = (
+            Menu.query.filter_by(is_available=True)
+            .join(Category)
+            .order_by(Category.name, Menu.name)
+            .all()
+        )
+    except Exception:
+        all_menus = []
+
+    if all_menus:
+        menu_items = [
+            _menu_model_to_dict(m)
+            for m in all_menus
+            if m.category and m.category.name != "Minuman"
+        ]
+        drink_items = [
+            _menu_model_to_dict(m)
+            for m in all_menus
+            if m.category and m.category.name == "Minuman"
+        ]
+    else:
+        menu_items = _HARDCODED_MENU
+        drink_items = _HARDCODED_DRINKS
+
+    menu_items = _derive_alacarte_items(menu_items)
+    package_items = [item for item in menu_items if item.get("item_kind") == "paket"]
+    food_items = [item for item in menu_items if item.get("item_kind") != "paket"]
+    drink_items = [_build_menu_presentation(item) for item in drink_items]
+
+    quick_menu_items = package_items + food_items + drink_items
+    slideshow_items = package_items + food_items + drink_items
+    if randomize_home:
+        quick_menu_items = [dict(item) for item in quick_menu_items]
+        slideshow_items = [dict(item) for item in slideshow_items]
+        shuffle(quick_menu_items)
+        shuffle(slideshow_items)
+
+    return {
+        "package_items": package_items,
+        "food_items": food_items,
+        "drink_items": drink_items,
+        "quick_menu_items": quick_menu_items[:6],
+        "slideshow_items": slideshow_items[:8],
     }
 
 
@@ -166,39 +299,13 @@ def index():
     """
     sambal_options = ["Sambal Merah", "Sambal Ijo", "Sambal Matah"]
 
-    # Coba ambil dari DB
-    try:
-        all_menus = (
-            Menu.query.filter_by(is_available=True)
-            .join(Category)
-            .order_by(Category.name, Menu.name)
-            .all()
-        )
-    except Exception:
-        # Fallback jika tabel belum ada (sebelum migrasi dijalankan)
-        all_menus = []
-
-    if all_menus:
-        # Split berdasarkan kategori
-        menu_items = [
-            _menu_model_to_dict(m)
-            for m in all_menus
-            if m.category and m.category.name != "Minuman"
-        ]
-        drink_items = [
-            _menu_model_to_dict(m)
-            for m in all_menus
-            if m.category and m.category.name == "Minuman"
-        ]
-    else:
-        # Fallback hardcoded (untuk development awal sebelum seed)
-        menu_items = _HARDCODED_MENU
-        drink_items = _HARDCODED_DRINKS
+    sections = get_menu_sections()
 
     return render_template(
         "menu/index.html",
-        menu_items=menu_items,
-        drink_items=drink_items,
+        package_items=sections["package_items"],
+        food_items=sections["food_items"],
+        drink_items=sections["drink_items"],
         sambal_options=sambal_options,
     )
 

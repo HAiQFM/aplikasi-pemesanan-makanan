@@ -50,6 +50,38 @@ def _current_user_id() -> int | None:
     return None
 
 
+def _item_supports_sambal(item_name: str) -> bool:
+    normalized_name = str(item_name or "").strip().lower()
+    return normalized_name.startswith("ayam ") or normalized_name.startswith("nasi ayam ")
+
+
+def _item_supports_spice_level(item_name: str) -> bool:
+    normalized_name = str(item_name or "").strip().lower()
+    return normalized_name.startswith("ayam ") or normalized_name.startswith("nasi ayam ")
+
+
+def _filter_item_details(item_name: str, raw_details: list[dict]) -> list[dict]:
+    supports_sambal = _item_supports_sambal(item_name)
+    supports_spice_level = _item_supports_spice_level(item_name)
+    allowed_details = []
+
+    for detail in raw_details:
+        label = str(detail.get("label", "")).strip()
+        value = str(detail.get("value", "")).strip()
+        if not label or not value:
+            continue
+
+        if label == "Sambal" and not supports_sambal:
+            continue
+
+        if label == "Tingkat Pedas" and not supports_spice_level:
+            continue
+
+        allowed_details.append({"label": label, "value": value})
+
+    return allowed_details
+
+
 def _parse_checkout_items(raw_value: str) -> list[dict]:
     if not raw_value:
         return []
@@ -79,6 +111,7 @@ def _parse_checkout_items(raw_value: str) -> list[dict]:
                 value = str(detail.get("value", "")).strip()
                 if label and value:
                     details.append({"label": label, "value": value})
+        details = _filter_item_details(name, details)
         normalized.append(
             {"name": name, "qty": qty, "price": price, "details": details}
         )
