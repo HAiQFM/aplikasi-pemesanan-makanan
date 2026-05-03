@@ -14,10 +14,13 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 from flask import (
     Blueprint,
     current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -47,11 +50,48 @@ def _set_auth_session(user: User) -> None:
     session["user_role"] = user.role
 
 
+def _render_login_template():
+    return render_template(
+        "auth/login.html",
+        google_client_id=current_app.config.get("GOOGLE_CLIENT_ID", ""),
+        google_login_enabled=_google_oauth_configured(),
+        google_csrf_token=_get_google_csrf_token(),
+    )
+
+
 def _google_oauth_configured() -> bool:
+    return bool(current_app.config.get("GOOGLE_CLIENT_ID"))
+
+
+def _google_redirect_oauth_configured() -> bool:
     return bool(
         current_app.config.get("GOOGLE_CLIENT_ID")
         and current_app.config.get("GOOGLE_CLIENT_SECRET")
     )
+
+
+def _get_google_csrf_token() -> str:
+    token = session.get("google_csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["google_csrf_token"] = token
+    return token
+
+
+def _origin_allowed() -> bool:
+    origin = request.headers.get("Origin")
+    if not origin:
+        return True
+
+    allowed_origins = {
+        value.strip().rstrip("/")
+        for value in current_app.config.get("GOOGLE_ALLOWED_ORIGINS", [])
+        if value.strip()
+    }
+    if not allowed_origins:
+        allowed_origins.add(request.host_url.rstrip("/"))
+
+    return origin.rstrip("/") in allowed_origins
 
 
 def _google_redirect_uri() -> str:
@@ -135,6 +175,36 @@ def _find_or_create_google_user(profile: dict) -> User:
     return user
 
 
+def _verify_google_id_token(credential: str) -> dict:
+    if not credential:
+        raise GoogleOAuthError("Token Google tidak ditemukan.")
+
+    client_id = current_app.config.get("GOOGLE_CLIENT_ID", "")
+    if not client_id:
+        raise GoogleOAuthError("Login Google belum dikonfigurasi.")
+
+    try:
+        payload = google_id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            client_id,
+        )
+    except ValueError as exc:
+        current_app.logger.warning("[google-gis] ID token verification failed: %s", exc)
+        raise GoogleOAuthError("Token Google tidak valid.") from exc
+
+    issuer = payload.get("iss")
+    if issuer not in {"accounts.google.com", "https://accounts.google.com"}:
+        current_app.logger.warning("[google-gis] Invalid issuer: %s", issuer)
+        raise GoogleOAuthError("Issuer token Google tidak valid.")
+
+    if payload.get("aud") != client_id:
+        current_app.logger.warning("[google-gis] Invalid audience: %s", payload.get("aud"))
+        raise GoogleOAuthError("Audience token Google tidak sesuai.")
+
+    return payload
+
+
 # ── REGISTER ──────────────────────────────────────────────────────────────────
 
 
@@ -200,19 +270,19 @@ def login():
 
         if not email or not password:
             flash("Email dan password wajib diisi.", "error")
-            return render_template("auth/login.html")
+            return _render_login_template()
 
         # Cari user di DB
         user = User.query.filter_by(email=email, is_active=True).first()
 
         if user is None:
             flash("Email tidak terdaftar atau akun dinonaktifkan.", "error")
-            return render_template("auth/login.html")
+            return _render_login_template()
 
         # Verifikasi password menggunakan werkzeug.security.check_password_hash
         if not user.check_password(password):
             flash("Password salah.", "error")
-            return render_template("auth/login.html")
+            return _render_login_template()
 
         _set_auth_session(user)
 
@@ -223,12 +293,12 @@ def login():
         flash("Login berhasil.", "success")
         return redirect(url_for("main.index"))
 
-    return render_template("auth/login.html")
+    return _render_login_template()
 
 
 @auth_bp.route("/google/login")
 def google_login():
-    if not _google_oauth_configured():
+    if not _google_redirect_oauth_configured():
         flash("Login Google belum dikonfigurasi.", "error")
         return redirect(url_for("main.index"))
 
@@ -280,6 +350,46 @@ def google_callback():
 
 
 # ── LOGOUT ────────────────────────────────────────────────────────────────────
+
+
+@auth_bp.route("/google/credential", methods=["POST"])
+def google_credential_login():
+    if not _google_oauth_configured():
+        return jsonify({"message": "Login Google belum dikonfigurasi."}), 503
+
+    if not _origin_allowed():
+        return jsonify({"message": "Origin tidak diizinkan."}), 403
+
+    expected_csrf = session.get("google_csrf_token", "")
+    received_csrf = request.headers.get("X-CSRF-Token", "")
+    if not expected_csrf or not secrets.compare_digest(expected_csrf, received_csrf):
+        return jsonify({"message": "Sesi login Google tidak valid."}), 403
+
+    data = request.get_json(silent=True) or {}
+    credential = data.get("credential", "")
+
+    try:
+        payload = _verify_google_id_token(credential)
+        user = _find_or_create_google_user(payload)
+    except GoogleOAuthError as exc:
+        return jsonify({"message": str(exc)}), 401
+
+    session.pop("google_csrf_token", None)
+    _set_auth_session(user)
+    session.permanent = True
+
+    return jsonify(
+        {
+            "message": "Login Google berhasil.",
+            "redirect_url": url_for("main.index"),
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+            },
+        }
+    )
 
 
 @auth_bp.route("/logout", methods=["POST"])
