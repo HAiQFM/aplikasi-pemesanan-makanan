@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from dotenv import load_dotenv
 
@@ -10,6 +11,12 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-ganti-di-production")
     FLASK_ENV = os.getenv("FLASK_ENV", "development")
     DEBUG = os.getenv("FLASK_DEBUG", "0") == "1"
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "0") == "1"
+    PERMANENT_SESSION_LIFETIME = timedelta(
+        hours=int(os.getenv("SESSION_LIFETIME_HOURS", "8"))
+    )
 
     # ── SQLAlchemy / MySQL ────────────────────────────────────────────────────
     # Gunakan driver PyMySQL: mysql+pymysql://user:pass@host:port/dbname
@@ -46,3 +53,8 @@ class Config:
         "https://openidconnect.googleapis.com/v1/userinfo",
     )
     GOOGLE_OAUTH_SCOPES = os.getenv("GOOGLE_OAUTH_SCOPES", "openid email profile")
+    GOOGLE_ALLOWED_ORIGINS = [
+        origin.strip()
+        for origin in os.getenv("GOOGLE_ALLOWED_ORIGINS", "").split(",")
+        if origin.strip()
+    ]

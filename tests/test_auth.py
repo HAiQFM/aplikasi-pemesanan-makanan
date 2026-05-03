@@ -63,6 +63,54 @@ def test_google_login_redirects_to_google_when_configured(app, client):
         assert auth_session["google_oauth_state"]
 
 
+def test_google_credential_login_requires_csrf(app, client):
+    app.config.update(GOOGLE_CLIENT_ID="client-test.apps.googleusercontent.com")
+
+    response = client.post(
+        "/auth/google/credential",
+        json={"credential": "fake-token"},
+    )
+
+    assert response.status_code == 403
+
+
+def test_google_credential_login_creates_session(app, client, monkeypatch):
+    app.config.update(GOOGLE_CLIENT_ID="client-test.apps.googleusercontent.com")
+
+    client.get("/auth/login")
+    with client.session_transaction() as auth_session:
+        csrf_token = auth_session["google_csrf_token"]
+
+    def fake_verify_google_id_token(credential):
+        assert credential == "valid-token"
+        return {
+            "iss": "https://accounts.google.com",
+            "aud": "client-test.apps.googleusercontent.com",
+            "sub": "google-user-1",
+            "email": "google-user@example.com",
+            "email_verified": True,
+            "name": "Google User",
+        }
+
+    from app.routes import auth
+
+    monkeypatch.setattr(auth, "_verify_google_id_token", fake_verify_google_id_token)
+
+    response = client.post(
+        "/auth/google/credential",
+        json={"credential": "valid-token"},
+        headers={"X-CSRF-Token": csrf_token},
+    )
+
+    assert response.status_code == 200
+    assert response.json["redirect_url"] == "/"
+    assert response.json["user"]["email"] == "google-user@example.com"
+
+    with client.session_transaction() as auth_session:
+        assert auth_session["is_logged_in"] is True
+        assert auth_session["user_email"] == "google-user@example.com"
+
+
 def test_logout_redirects_to_login(client):
     response = client.post("/auth/logout")
     assert response.status_code == 302
