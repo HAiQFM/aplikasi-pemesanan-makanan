@@ -68,6 +68,21 @@ DATABASE_URL=sqlite:///app.db
 Catatan:
 - Jika `DATABASE_URL` tidak diisi, aplikasi otomatis memakai SQLite lokal (`app.db`).
 
+### Login Google OAuth 2.0
+
+Tambahkan kredensial OAuth dari Google Cloud Console jika ingin mengaktifkan tombol **Sign in with Google**:
+
+```env
+GOOGLE_CLIENT_ID=client-id-anda.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=client-secret-anda
+```
+
+Daftarkan redirect URI berikut pada OAuth Client bertipe Web application:
+
+```text
+http://127.0.0.1:5000/auth/google/callback
+```
+
 ## Menjalankan Aplikasi
 
 ```powershell
