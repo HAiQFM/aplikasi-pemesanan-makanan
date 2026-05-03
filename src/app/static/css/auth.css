@@ -99,6 +99,10 @@ body {
   animation: pageFadeIn 0.8s ease-out both;
 }
 
+.auth-page-register .auth-container {
+  height: 600px;
+}
+
 @keyframes pageFadeIn {
   from {
     opacity: 0;
@@ -342,6 +346,27 @@ body {
   position: relative;
   z-index: 2;
   animation: slideInRight 0.8s ease-out 0.3s both;
+}
+
+.auth-page-register .form-wrapper {
+  max-height: 504px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.55) transparent;
+}
+
+.auth-page-register .form-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.auth-page-register .form-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.auth-page-register .form-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
 }
 
 @keyframes slideInRight {
@@ -817,6 +842,16 @@ body {
     grid-template-columns: 1fr;
     max-width: 500px;
     min-height: auto;
+  }
+
+  .auth-page-register .auth-container {
+    height: auto;
+  }
+
+  .auth-page-register .form-wrapper {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
   }
 
   .brand-section {
