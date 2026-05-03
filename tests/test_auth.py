@@ -8,13 +8,13 @@ def test_register_page_loads(client):
     assert response.status_code == 200
 
 
-def test_login_post_redirects_to_order_history(client):
+def test_login_post_redirects_to_home(client):
     response = client.post(
         "/auth/login",
         data={"email": "firas@mail.com", "password": "secret123"},
     )
     assert response.status_code == 302
-    assert response.headers["Location"].endswith("/order/history")
+    assert response.headers["Location"].endswith("/")
 
 
 def test_register_post_redirects_to_login(client):
@@ -38,6 +38,29 @@ def test_admin_login_redirects_to_dashboard(client):
     )
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/admin/")
+
+
+def test_google_login_redirects_to_home_when_not_configured(client):
+    response = client.get("/auth/google/login")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/")
+
+
+def test_google_login_redirects_to_google_when_configured(app, client):
+    app.config.update(
+        GOOGLE_CLIENT_ID="client-test.apps.googleusercontent.com",
+        GOOGLE_CLIENT_SECRET="secret-test",
+    )
+
+    response = client.get("/auth/google/login")
+    assert response.status_code == 302
+    assert response.headers["Location"].startswith(
+        "https://accounts.google.com/o/oauth2/v2/auth"
+    )
+    assert "client-test.apps.googleusercontent.com" in response.headers["Location"]
+
+    with client.session_transaction() as auth_session:
+        assert auth_session["google_oauth_state"]
 
 
 def test_logout_redirects_to_login(client):
