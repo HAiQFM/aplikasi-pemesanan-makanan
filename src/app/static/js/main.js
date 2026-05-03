@@ -421,7 +421,7 @@ function initHomeQuickMenu() {
     products.forEach(function (product) {
       var category = product.getAttribute("data-category");
       var shouldShow = activeFilter === "all" || category === activeFilter;
-      product.style.display = shouldShow ? "flex" : "none";
+      product.style.display = shouldShow ? "" : "none";
       if (shouldShow) visibleCount += 1;
     });
 
