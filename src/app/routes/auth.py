@@ -8,7 +8,22 @@ Perubahan dari versi session-only:
   - Tidak ada lagi kredensial hardcoded di kode sumber
 """
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+import json
+import secrets
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 
 from app.models import User, db
 
@@ -18,6 +33,106 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 def _reset_auth_session() -> None:
     """Bersihkan session saat logout."""
     session.clear()
+
+
+class GoogleOAuthError(RuntimeError):
+    """Error yang aman ditampilkan sebagai flash message untuk OAuth Google."""
+
+
+def _set_auth_session(user: User) -> None:
+    session["is_logged_in"] = True
+    session["user_id"] = user.id
+    session["user_email"] = user.email
+    session["user_name"] = user.name
+    session["user_role"] = user.role
+
+
+def _google_oauth_configured() -> bool:
+    return bool(
+        current_app.config.get("GOOGLE_CLIENT_ID")
+        and current_app.config.get("GOOGLE_CLIENT_SECRET")
+    )
+
+
+def _google_redirect_uri() -> str:
+    return url_for("auth.google_callback", _external=True)
+
+
+def _read_json_response(response) -> dict:
+    return json.loads(response.read().decode("utf-8"))
+
+
+def _request_google_json(
+    url: str,
+    *,
+    data: dict = None,
+    access_token: str = "",
+) -> dict:
+    headers = {"Accept": "application/json"}
+    body = None
+
+    if data is not None:
+        body = urlencode(data).encode("utf-8")
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+
+    if access_token:
+        headers["Authorization"] = f"Bearer {access_token}"
+
+    try:
+        with urlopen(Request(url, data=body, headers=headers), timeout=10) as response:
+            return _read_json_response(response)
+    except HTTPError as exc:
+        details = exc.read().decode("utf-8", errors="replace")
+        current_app.logger.warning("[google-oauth] HTTP error %s: %s", exc.code, details)
+    except (URLError, TimeoutError, json.JSONDecodeError) as exc:
+        current_app.logger.warning("[google-oauth] Request failed: %s", exc)
+
+    raise GoogleOAuthError("Login Google gagal diproses. Silakan coba lagi.")
+
+
+def _exchange_google_code(code: str) -> dict:
+    return _request_google_json(
+        current_app.config["GOOGLE_OAUTH_TOKEN_URL"],
+        data={
+            "code": code,
+            "client_id": current_app.config["GOOGLE_CLIENT_ID"],
+            "client_secret": current_app.config["GOOGLE_CLIENT_SECRET"],
+            "redirect_uri": _google_redirect_uri(),
+            "grant_type": "authorization_code",
+        },
+    )
+
+
+def _fetch_google_profile(access_token: str) -> dict:
+    if not access_token:
+        raise GoogleOAuthError("Token Google tidak valid.")
+    return _request_google_json(
+        current_app.config["GOOGLE_OAUTH_USERINFO_URL"],
+        access_token=access_token,
+    )
+
+
+def _find_or_create_google_user(profile: dict) -> User:
+    email = (profile.get("email") or "").strip().lower()
+    name = (profile.get("name") or "").strip() or email.split("@")[0]
+
+    if not email:
+        raise GoogleOAuthError("Akun Google tidak mengirim alamat email.")
+
+    if profile.get("email_verified") is False:
+        raise GoogleOAuthError("Email Google belum terverifikasi.")
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        if not user.is_active:
+            raise GoogleOAuthError("Akun Anda sedang dinonaktifkan.")
+        return user
+
+    user = User(name=name, email=email, role="customer")
+    user.set_password(secrets.token_urlsafe(32))
+    db.session.add(user)
+    db.session.commit()
+    return user
 
 
 # ── REGISTER ──────────────────────────────────────────────────────────────────
@@ -99,12 +214,7 @@ def login():
             flash("Password salah.", "error")
             return render_template("auth/login.html")
 
-        # Set session
-        session["is_logged_in"] = True
-        session["user_id"] = user.id  # ← baru: simpan ID untuk FK pesanan
-        session["user_email"] = user.email
-        session["user_name"] = user.name
-        session["user_role"] = user.role
+        _set_auth_session(user)
 
         if user.role == "admin":
             flash("Login admin berhasil.", "success")
@@ -114,6 +224,59 @@ def login():
         return redirect(url_for("main.index"))
 
     return render_template("auth/login.html")
+
+
+@auth_bp.route("/google/login")
+def google_login():
+    if not _google_oauth_configured():
+        flash("Login Google belum dikonfigurasi.", "error")
+        return redirect(url_for("main.index"))
+
+    state = secrets.token_urlsafe(32)
+    session["google_oauth_state"] = state
+
+    params = {
+        "client_id": current_app.config["GOOGLE_CLIENT_ID"],
+        "redirect_uri": _google_redirect_uri(),
+        "response_type": "code",
+        "scope": current_app.config["GOOGLE_OAUTH_SCOPES"],
+        "state": state,
+        "prompt": "select_account",
+        "access_type": "online",
+        "include_granted_scopes": "true",
+    }
+    return redirect(f"{current_app.config['GOOGLE_OAUTH_AUTH_URL']}?{urlencode(params)}")
+
+
+@auth_bp.route("/google/callback")
+def google_callback():
+    expected_state = session.pop("google_oauth_state", "")
+    received_state = request.args.get("state", "")
+
+    if not expected_state or expected_state != received_state:
+        flash("Sesi login Google tidak valid. Silakan coba lagi.", "error")
+        return redirect(url_for("main.index"))
+
+    if request.args.get("error"):
+        flash("Login Google dibatalkan atau ditolak.", "error")
+        return redirect(url_for("main.index"))
+
+    code = request.args.get("code", "")
+    if not code:
+        flash("Kode otorisasi Google tidak ditemukan.", "error")
+        return redirect(url_for("main.index"))
+
+    try:
+        token = _exchange_google_code(code)
+        profile = _fetch_google_profile(token.get("access_token", ""))
+        user = _find_or_create_google_user(profile)
+    except GoogleOAuthError as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("main.index"))
+
+    _set_auth_session(user)
+    flash("Login Google berhasil.", "success")
+    return redirect(url_for("main.index"))
 
 
 # ── LOGOUT ────────────────────────────────────────────────────────────────────

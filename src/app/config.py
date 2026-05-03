@@ -29,3 +29,20 @@ class Config:
     # ── Admin default (dibaca oleh seed script / auth bootstrap) ─────────────
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@example.com")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@Secure123")
+
+    # Google OAuth 2.0 (isi dari Google Cloud Console > OAuth client)
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+    GOOGLE_OAUTH_AUTH_URL = os.getenv(
+        "GOOGLE_OAUTH_AUTH_URL",
+        "https://accounts.google.com/o/oauth2/v2/auth",
+    )
+    GOOGLE_OAUTH_TOKEN_URL = os.getenv(
+        "GOOGLE_OAUTH_TOKEN_URL",
+        "https://oauth2.googleapis.com/token",
+    )
+    GOOGLE_OAUTH_USERINFO_URL = os.getenv(
+        "GOOGLE_OAUTH_USERINFO_URL",
+        "https://openidconnect.googleapis.com/v1/userinfo",
+    )
+    GOOGLE_OAUTH_SCOPES = os.getenv("GOOGLE_OAUTH_SCOPES", "openid email profile")
