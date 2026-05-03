@@ -8,6 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <title>Login - Warung Nasi Teh Sarah</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+  {% if google_login_enabled %}
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  {% endif %}
 </head>
 <body>
   <main class="auth-page">
@@ -153,6 +156,39 @@
             </button>
           </form>
 
+          {% if google_login_enabled %}
+            <div class="auth-divider" aria-hidden="true">
+              <span>atau</span>
+            </div>
+
+            <div
+              id="g_id_onload"
+              data-client_id="{{ google_client_id }}"
+              data-context="signin"
+              data-ux_mode="popup"
+              data-callback="handleGoogleCredential"
+              data-auto_prompt="false">
+            </div>
+
+            <div class="google-login-wrap">
+              <div
+                class="g_id_signin"
+                data-type="standard"
+                data-shape="rectangular"
+                data-theme="outline"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left"
+                data-width="320">
+              </div>
+            </div>
+            <p class="google-login-error" data-role="google-login-error" hidden></p>
+          {% else %}
+            <p class="google-login-hint">
+              Login Google belum aktif. Isi GOOGLE_CLIENT_ID di file .env untuk menampilkan tombol.
+            </p>
+          {% endif %}
+
           <p class="switch-link">
             Belum punya akun? 
             <a href="{{ url_for('auth.register') }}">Buat akun baru</a>
@@ -163,5 +199,42 @@
    </main>
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% if google_login_enabled %}
+    <script>
+      window.handleGoogleCredential = async function (response) {
+        var errorBox = document.querySelector("[data-role='google-login-error']");
+        if (errorBox) {
+          errorBox.hidden = true;
+          errorBox.textContent = "";
+        }
+
+        try {
+          var result = await fetch("{{ url_for('auth.google_credential_login') }}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-Token": "{{ google_csrf_token }}"
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({ credential: response.credential })
+          });
+
+          var data = await result.json();
+          if (!result.ok) {
+            throw new Error(data.message || "Login Google gagal.");
+          }
+
+          window.location.href = data.redirect_url || "{{ url_for('main.index') }}";
+        } catch (error) {
+          if (errorBox) {
+            errorBox.textContent = error.message;
+            errorBox.hidden = false;
+          } else {
+            alert(error.message);
+          }
+        }
+      };
+    </script>
+  {% endif %}
 </body>
 </html>
