@@ -15,7 +15,8 @@ from datetime import date, datetime
 
 from sqlalchemy import func
 
-from app.models import Order, OrderItem, db
+from app.models import Cart, Order, OrderItem, db
+from app.services.inventory import deduct_inventory_for_items
 
 # Label status yang valid — urut sesuai alur pesanan
 STATUS_LABELS = [
@@ -75,43 +76,53 @@ def create_order(
 
     Pengganti: append ke JSON + _save_raw_orders()
     """
-    # Tentukan status awal berdasarkan metode pembayaran
-    if payment_method == "cash":
-        initial_status = "Sedang Dimasak"
-        payment_verification = "verified"
-    else:
-        initial_status = "Menunggu Pembayaran"
-        payment_verification = "pending"
+    try:
+        # Tentukan status awal berdasarkan metode pembayaran
+        if payment_method == "cash":
+            initial_status = "Sedang Dimasak"
+            payment_verification = "verified"
+        else:
+            initial_status = "Menunggu Pembayaran"
+            payment_verification = "pending"
 
-    order = Order(
-        user_id=user_id,
-        customer_name=customer_name.strip(),
-        customer_email=customer_email.strip().lower(),
-        address=address.strip(),
-        payment_method=payment_method,
-        payment_proof_path=payment_proof_path,
-        payment_verification=payment_verification,
-        total_amount=int(total_amount),
-        status=initial_status,
-    )
-    db.session.add(order)
-    db.session.flush()  # dapatkan order.id sebelum commit
-
-    # Simpan setiap item pesanan ke tabel order_items
-    for item in items or []:
-        if not isinstance(item, dict):
-            continue
-        order_item = OrderItem(
-            order_id=order.id,
-            menu_name=str(item.get("name", "")).strip(),
-            quantity=int(item.get("qty", 1) or 1),
-            unit_price=int(item.get("price", 0) or 0),
-            details=item.get("details") or [],  # JSON: [{"label": ..., "value": ...}]
+        order = Order(
+            user_id=user_id,
+            customer_name=customer_name.strip(),
+            customer_email=customer_email.strip().lower(),
+            address=address.strip(),
+            payment_method=payment_method,
+            payment_proof_path=payment_proof_path,
+            payment_verification=payment_verification,
+            total_amount=int(total_amount),
+            status=initial_status,
         )
-        db.session.add(order_item)
+        db.session.add(order)
+        db.session.flush()  # dapatkan order.id sebelum commit
 
-    db.session.commit()
-    return order.to_dict()
+        # Simpan setiap item pesanan ke tabel order_items
+        for item in items or []:
+            if not isinstance(item, dict):
+                continue
+            order_item = OrderItem(
+                order_id=order.id,
+                menu_name=str(item.get("name", "")).strip(),
+                quantity=int(item.get("qty", 1) or 1),
+                unit_price=int(item.get("price", 0) or 0),
+                details=item.get("details") or [],  # JSON: [{"label": ..., "value": ...}]
+            )
+            db.session.add(order_item)
+
+        inventory_deductions = deduct_inventory_for_items(items)
+        order.inventory_deductions = inventory_deductions
+        if user_id is not None:
+            Cart.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        db.session.commit()
+
+        order_data = order.to_dict()
+        return order_data
+    except Exception:
+        db.session.rollback()
+        raise
 
 
 # ── UPDATE ────────────────────────────────────────────────────────────────────
