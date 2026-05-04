@@ -80,6 +80,21 @@
       color: var(--muted);
       font-size: 0.92rem;
     }
+    .summary-address {
+      align-items: flex-start;
+    }
+    .summary-address strong {
+      text-align: right;
+      max-width: 70%;
+    }
+    .map-link {
+      display: inline-block;
+      margin-top: 4px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .map-link:hover { text-decoration: underline; }
     .flash-list {
       list-style: none;
       margin: 14px 0 0;
@@ -150,6 +165,10 @@
           {% endif %}
           </strong>
         </li>
+        <li class="summary-address"><span>Alamat</span><strong>{{ order.address }}</strong></li>
+        {% if order.delivery_maps_url %}
+          <li><span>Titik Maps</span><strong><a class="map-link" href="{{ order.delivery_maps_url }}" target="_blank" rel="noopener">Buka Google Maps</a></strong></li>
+        {% endif %}
       </ul>
     {% endif %}
 
