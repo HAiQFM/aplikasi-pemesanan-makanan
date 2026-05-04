@@ -441,6 +441,32 @@
       color: var(--muted);
       font-size: 0.82rem;
     }
+    .flash-list {
+      list-style: none;
+      margin: 0 0 12px;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+    .flash-list li {
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border: 1px solid var(--line-strong);
+      background: #f3fbf4;
+      color: #1d5138;
+    }
+    .flash-list li.error {
+      background: #fff4f3;
+      color: var(--danger);
+      border-color: #ffc7c2;
+    }
+    .flash-list li.warning {
+      background: #fff8e6;
+      color: #8a5b00;
+      border-color: #f2d38a;
+    }
     .checkout-submit {
       width: 100%;
       padding: 14px;
@@ -550,6 +576,16 @@
 
       <section class="checkout-main">
         <div class="checkout-main-card">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <ul class="flash-list">
+                {% for category, message in messages %}
+                  <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          {% endwith %}
+
           <div class="checkout-main-head">
             <h2 style="margin: 0 0 6px;">Detail Pengiriman</h2>
             <p class="desc">Lengkapi alamat dan metode pembayaran untuk mengirim pesanan Anda.</p>

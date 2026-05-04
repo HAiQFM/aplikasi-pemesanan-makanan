@@ -172,5 +172,18 @@
       <a class="btn btn-soft" href="{{ url_for('order.checkout') }}">Buat Pesanan Lagi</a>
     </div>
   </main>
+  {% if should_reset_cart %}
+    <script>
+      (function () {
+        try {
+          localStorage.removeItem("foodhall_cart");
+          localStorage.removeItem("foodhall_promo_code");
+          document.dispatchEvent(new Event("checkout:refresh"));
+        } catch (error) {
+          return;
+        }
+      })();
+    </script>
+  {% endif %}
 </body>
 </html>

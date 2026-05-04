@@ -499,6 +499,63 @@ button:hover {
     width: 100%;
 }
 
+.order-menu-list {
+    min-width: 220px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+}
+
+.order-menu-list li {
+    display: grid;
+    gap: 3px;
+}
+
+.order-menu-list strong {
+    color: var(--text);
+}
+
+.order-menu-list span {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.deduction-details {
+    min-width: 360px;
+}
+
+.deduction-details summary {
+    cursor: pointer;
+    color: var(--brand-strong);
+    font-weight: 700;
+}
+
+.deduction-table-wrap {
+    margin-top: 8px;
+    max-height: 260px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.deduction-table {
+    min-width: 520px;
+    border: 0;
+    font-size: 0.88rem;
+}
+
+.deduction-table th,
+.deduction-table td {
+    padding: 7px 9px;
+}
+
+.deduction-table td:nth-child(3),
+.deduction-table td:nth-child(4) {
+    text-align: right;
+}
+
 .badge {
     display: inline-flex;
     align-items: center;

@@ -9,6 +9,7 @@ Perubahan dari versi sebelumnya:
 
 from flask import Flask
 from flask_migrate import Migrate
+from sqlalchemy import inspect, text
 
 from app.config import Config
 from app.models import db
@@ -53,6 +54,7 @@ def _bootstrap_database(app: Flask) -> None:
     """
     try:
         db.create_all()
+        _ensure_order_inventory_column(app)
         _seed_admin_user(app)
     except Exception as exc:
         # Jangan crash jika DB belum bisa dijangkau (misal: Docker belum ready)
@@ -81,3 +83,23 @@ def _seed_admin_user(app: Flask) -> None:
     db.session.add(admin)
     db.session.commit()
     app.logger.info(f"[bootstrap] Akun admin '{admin_email}' berhasil dibuat.")
+
+
+def _ensure_order_inventory_column(app: Flask) -> None:
+    """
+    Tambahkan kolom snapshot deduksi stok untuk database lama yang sudah terlanjur
+    dibuat sebelum fitur inventory deduction ada.
+    """
+    inspector = inspect(db.engine)
+    if "orders" not in inspector.get_table_names():
+        return
+
+    existing_columns = {column["name"] for column in inspector.get_columns("orders")}
+    if "inventory_deductions" in existing_columns:
+        return
+
+    db.session.execute(
+        text("ALTER TABLE orders ADD COLUMN inventory_deductions JSON NULL")
+    )
+    db.session.commit()
+    app.logger.info("[bootstrap] Kolom orders.inventory_deductions berhasil ditambahkan.")

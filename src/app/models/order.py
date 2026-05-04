@@ -44,6 +44,7 @@ class Order(db.Model):
         default="Menunggu Pembayaran",
         # Nilai valid: Menunggu Pembayaran | Sedang Dimasak | Dalam Perjalanan | Selesai | Dibatalkan
     )
+    inventory_deductions = db.Column(db.JSON, nullable=True)
 
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(
@@ -76,6 +77,7 @@ class Order(db.Model):
             "payment_verification": self.payment_verification or "pending",
             "total_amount": int(self.total_amount or 0),
             "items": [item.to_dict() for item in self.items],
+            "inventory_deductions": self.inventory_deductions or [],
             "status": self.status or "",
             "created_at": (
                 self.created_at.isoformat(timespec="seconds") if self.created_at else ""

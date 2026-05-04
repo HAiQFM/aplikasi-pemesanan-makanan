@@ -35,11 +35,13 @@
                             <th>Pelanggan</th>
                             <th>Email</th>
                             <th>Alamat</th>
+                            <th>Menu Dipesan</th>
                             <th>Total</th>
                             <th>Metode Bayar</th>
                             <th>Verifikasi</th>
                             <th>Bukti Bayar</th>
                             <th>Status</th>
+                            <th>Deduksi Stok</th>
                             <th>Tanggal</th>
                             <th>Aksi</th>
                         </tr>
@@ -52,6 +54,26 @@
                                     <td>{{ order.customer_name }}</td>
                                     <td>{{ order.customer_email }}</td>
                                     <td>{{ order.address }}</td>
+                                    <td>
+                                        {% if order["items"] %}
+                                            <ul class="order-menu-list">
+                                                {% for item in order["items"] %}
+                                                    <li>
+                                                        <strong>{{ item.qty }}x {{ item.name }}</strong>
+                                                        {% if item.details %}
+                                                            <span>
+                                                                {% for detail in item.details %}
+                                                                    {{ detail.label }}: {{ detail.value }}{% if not loop.last %}, {% endif %}
+                                                                {% endfor %}
+                                                            </span>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                     <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
                                     <td>
                                         {% if order.payment_method == "cash" %}
@@ -86,6 +108,37 @@
                                         {% endif %}
                                     </td>
                                     <td><span class="badge badge-status">{{ order.status }}</span></td>
+                                    <td>
+                                        {% if order.inventory_deductions %}
+                                            <details class="deduction-details">
+                                                <summary>{{ order.inventory_deductions|length }} bahan</summary>
+                                                <div class="deduction-table-wrap">
+                                                    <table class="deduction-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Bahan</th>
+                                                                <th>Satuan</th>
+                                                                <th>Dipakai</th>
+                                                                <th>Sisa Stok</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for row in order.inventory_deductions %}
+                                                                <tr>
+                                                                    <td>{{ row.ingredient_name }}</td>
+                                                                    <td>{{ row.unit }}</td>
+                                                                    <td>{{ "{:,.2f}".format(row.quantity_deducted).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                                                                    <td>{{ "{:,.2f}".format(row.remaining_stock).replace(',', '_').replace('.', ',').replace('_', '.') }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </details>
+                                        {% else %}
+                                            <span class="badge badge-neutral">Tidak ada</span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ order.created_at.replace('T', ' ') }}</td>
                                     <td>
                                         <div class="action-stack">
@@ -108,7 +161,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="11">Belum ada data pesanan.</td>
+                                <td colspan="13">Belum ada data pesanan.</td>
                             </tr>
                         {% endif %}
                     </tbody>

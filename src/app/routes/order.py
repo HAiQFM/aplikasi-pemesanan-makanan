@@ -22,6 +22,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 
+from app.services.inventory import InventoryUnitMismatch
 from app.services.order_store import create_order, get_order, list_orders, update_order
 
 order_bp = Blueprint("order", __name__, url_prefix="/order")
@@ -177,16 +178,20 @@ def checkout():
                 )
                 return redirect(url_for("order.checkout"))
 
-        order = create_order(
-            customer_name=customer_name,
-            customer_email=_current_customer_key(),
-            address=address,
-            payment_method=payment_method,
-            total_amount=total_amount,
-            items=order_items,
-            payment_proof_path=None,
-            user_id=_current_user_id(),
-        )
+        try:
+            order = create_order(
+                customer_name=customer_name,
+                customer_email=_current_customer_key(),
+                address=address,
+                payment_method=payment_method,
+                total_amount=total_amount,
+                items=order_items,
+                payment_proof_path=None,
+                user_id=_current_user_id(),
+            )
+        except InventoryUnitMismatch as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("order.checkout"))
 
         if requires_proof and payment_proof:
             proof_path = _save_payment_proof(order["id"], payment_proof)
@@ -218,6 +223,7 @@ def checkout():
             )
 
         session["latest_order_id"] = order["id"]
+        session["cart_reset_required"] = True
         return redirect(url_for("order.success"))
 
     return render_template(
@@ -276,9 +282,16 @@ def upload_payment_proof(order_id: int):
 @order_bp.route("/success", methods=["GET"])
 def success():
     order = None
+    should_reset_cart = False
     raw_order_id = request.args.get("order_id", "").strip()
     if raw_order_id.isdigit():
         order = get_order(int(raw_order_id))
     elif str(session.get("latest_order_id", "")).isdigit():
         order = get_order(int(session.get("latest_order_id")))
-    return render_template("order/success.html", order=order)
+    if order and order.get("id") == session.get("latest_order_id"):
+        should_reset_cart = bool(session.pop("cart_reset_required", False))
+    return render_template(
+        "order/success.html",
+        order=order,
+        should_reset_cart=should_reset_cart,
+    )
