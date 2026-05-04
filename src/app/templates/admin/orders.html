@@ -51,7 +51,12 @@
                                     <td>#{{ order.id }}</td>
                                     <td>{{ order.customer_name }}</td>
                                     <td>{{ order.customer_email }}</td>
-                                    <td>{{ order.address }}</td>
+                                    <td>
+                                        {{ order.address }}
+                                        {% if order.delivery_maps_url %}
+                                            <br><a href="{{ order.delivery_maps_url }}" target="_blank" rel="noopener">Buka Maps</a>
+                                        {% endif %}
+                                    </td>
                                     <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
                                     <td>
                                         {% if order.payment_method == "cash" %}
