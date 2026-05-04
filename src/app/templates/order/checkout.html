@@ -386,89 +386,6 @@
       min-height: 110px;
       resize: vertical;
     }
-    .delivery-location {
-      display: grid;
-      gap: 10px;
-    }
-    .address-search-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-    }
-    .location-button {
-      border: 0;
-      border-radius: 14px;
-      background: var(--primary);
-      color: #fff;
-      font: inherit;
-      font-weight: 800;
-      padding: 12px 14px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .location-button:hover:not(:disabled) {
-      background: var(--primary-hover);
-    }
-    .location-button:disabled {
-      cursor: not-allowed;
-      opacity: 0.58;
-    }
-    .map-helper,
-    .address-status {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.45;
-    }
-    .address-status.error {
-      color: var(--danger);
-      font-weight: 700;
-    }
-    .address-status.success {
-      color: var(--primary-hover);
-      font-weight: 700;
-    }
-    .address-map-card {
-      position: relative;
-      min-height: 280px;
-      border: 1px solid var(--line-strong);
-      border-radius: 18px;
-      overflow: hidden;
-      background: #e8f2eb;
-    }
-    .address-map {
-      width: 100%;
-      height: 280px;
-    }
-    .map-fallback {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      text-align: center;
-      color: var(--muted);
-      background: #f7fff8;
-      font-weight: 700;
-      line-height: 1.45;
-    }
-    .address-final-label {
-      margin-top: 2px;
-    }
-    .coordinate-preview {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 0.78rem;
-    }
-    .coordinate-preview span {
-      background: #edf8f0;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 4px 8px;
-    }
     .checkout-main-card {
       background: #ffffff;
       border: 1px solid var(--line);
@@ -568,12 +485,10 @@
       .checkout-item-main {
         align-items: flex-start;
       }
-      .promo-row,
-      .address-search-row {
+      .promo-row {
         grid-template-columns: 1fr;
       }
       .promo-apply,
-      .location-button,
       .checkout-submit {
         width: 100%;
       }
@@ -648,41 +563,9 @@
                 <strong>{{ customer_name or 'Pelanggan' }}</strong>
               </div>
             </div>
-            <div class="delivery-location">
-              <label for="address_search">Alamat Pengiriman</label>
-              <div class="address-search-row">
-                <input
-                  id="address_search"
-                  type="text"
-                  placeholder="Cari alamat, gedung, atau nama tempat"
-                  autocomplete="off"
-                  {% if not google_maps_api_key %}disabled{% endif %}
-                />
-                <button
-                  id="use_device_location"
-                  class="location-button"
-                  type="button"
-                  {% if not google_maps_api_key %}disabled{% endif %}
-                >Gunakan Lokasi Saya</button>
-              </div>
-              <p class="map-helper">Cari alamat, klik peta, geser pin, atau gunakan lokasi perangkat agar titik pengiriman lebih akurat.</p>
-              <div class="address-map-card">
-                <div id="delivery_map" class="address-map" role="application" aria-label="Peta untuk memilih titik pengiriman"></div>
-                <div id="map_fallback" class="map-fallback" {% if google_maps_api_key %}hidden{% endif %}>
-                  Google Maps belum aktif. Isi <code>GOOGLE_MAPS_API_KEY</code> di file <code>.env</code>, lalu jalankan ulang aplikasi.
-                </div>
-              </div>
-              <label class="address-final-label" for="address">Alamat lengkap / patokan</label>
-              <textarea id="address" name="address" placeholder="Alamat akan otomatis terisi dari peta. Tambahkan nomor rumah, lantai, atau patokan di sini." required></textarea>
-              <input id="delivery_lat" name="delivery_lat" type="hidden" />
-              <input id="delivery_lng" name="delivery_lng" type="hidden" />
-              <input id="delivery_place_id" name="delivery_place_id" type="hidden" />
-              <input id="delivery_maps_url" name="delivery_maps_url" type="hidden" />
-              <p id="map_status" class="address-status" aria-live="polite"></p>
-              <div class="coordinate-preview" id="coordinate_preview" hidden>
-                <span>Lat: <strong id="preview_lat">-</strong></span>
-                <span>Lng: <strong id="preview_lng">-</strong></span>
-              </div>
+            <div>
+              <label for="address">Alamat Pengiriman</label>
+              <textarea id="address" name="address" placeholder="Masukkan alamat lengkap" required></textarea>
             </div>
             <div>
               <label for="payment_method">Metode Pembayaran</label>
@@ -716,196 +599,6 @@
     </div>
   </main>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-  <script>
-    (function () {
-      var hasMapsConfig = {{ 'true' if google_maps_api_key else 'false' }};
-      var mapElement = document.getElementById("delivery_map");
-      var fallbackElement = document.getElementById("map_fallback");
-      var searchInput = document.getElementById("address_search");
-      var useLocationButton = document.getElementById("use_device_location");
-      var addressInput = document.getElementById("address");
-      var latInput = document.getElementById("delivery_lat");
-      var lngInput = document.getElementById("delivery_lng");
-      var placeIdInput = document.getElementById("delivery_place_id");
-      var mapsUrlInput = document.getElementById("delivery_maps_url");
-      var mapStatus = document.getElementById("map_status");
-      var coordinatePreview = document.getElementById("coordinate_preview");
-      var previewLat = document.getElementById("preview_lat");
-      var previewLng = document.getElementById("preview_lng");
-
-      var map;
-      var marker;
-      var geocoder;
-      var defaultCenter = { lat: -6.2000000, lng: 106.8166660 };
-
-      function setStatus(message, type) {
-        if (!mapStatus) return;
-        mapStatus.textContent = message || "";
-        mapStatus.classList.remove("error", "success");
-        if (type) mapStatus.classList.add(type);
-      }
-
-      function showCoordinatePreview(lat, lng) {
-        if (!coordinatePreview || !previewLat || !previewLng) return;
-        coordinatePreview.hidden = false;
-        previewLat.textContent = Number(lat).toFixed(7);
-        previewLng.textContent = Number(lng).toFixed(7);
-      }
-
-      function formatMapsUrl(lat, lng) {
-        return "https://www.google.com/maps?q=" + encodeURIComponent(lat + "," + lng);
-      }
-
-      function updateDeliveryFields(latLng, options) {
-        var lat = latLng.lat();
-        var lng = latLng.lng();
-        var fixedLat = lat.toFixed(7);
-        var fixedLng = lng.toFixed(7);
-
-        latInput.value = fixedLat;
-        lngInput.value = fixedLng;
-        mapsUrlInput.value = formatMapsUrl(fixedLat, fixedLng);
-        showCoordinatePreview(fixedLat, fixedLng);
-
-        if (options && options.address) {
-          addressInput.value = options.address;
-        }
-        if (options && options.placeId) {
-          placeIdInput.value = options.placeId;
-        } else if (!options || !options.keepPlaceId) {
-          placeIdInput.value = "";
-        }
-      }
-
-      function moveMarker(latLng, options) {
-        if (!map || !marker) return;
-        marker.setPosition(latLng);
-        map.panTo(latLng);
-        updateDeliveryFields(latLng, options || {});
-      }
-
-      function reverseGeocode(latLng) {
-        if (!geocoder) return;
-        setStatus("Mengambil alamat dari titik peta...", "");
-        geocoder.geocode({ location: latLng }, function (results, status) {
-          if (status === "OK" && results && results[0]) {
-            updateDeliveryFields(latLng, {
-              address: results[0].formatted_address,
-              placeId: results[0].place_id || "",
-            });
-            setStatus("Alamat berhasil diambil dari peta.", "success");
-            return;
-          }
-          setStatus("Titik sudah dipilih, tetapi alamat detail belum bisa dibaca. Silakan lengkapi manual.", "error");
-        });
-      }
-
-      function useDeviceLocation() {
-        if (!hasMapsConfig) {
-          setStatus("Google Maps belum dikonfigurasi.", "error");
-          return;
-        }
-        if (!("geolocation" in navigator)) {
-          setStatus("Browser/perangkat ini tidak mendukung akses lokasi.", "error");
-          return;
-        }
-
-        useLocationButton.disabled = true;
-        setStatus("Meminta izin lokasi perangkat...", "");
-        navigator.geolocation.getCurrentPosition(
-          function (position) {
-            var latLng = new google.maps.LatLng(
-              position.coords.latitude,
-              position.coords.longitude
-            );
-            moveMarker(latLng, {});
-            if (map) map.setZoom(17);
-            reverseGeocode(latLng);
-            useLocationButton.disabled = false;
-          },
-          function (error) {
-            var message = "Lokasi tidak bisa diambil.";
-            if (error.code === error.PERMISSION_DENIED) {
-              message = "Izin lokasi ditolak. Aktifkan izin lokasi browser atau pilih titik di peta secara manual.";
-            } else if (error.code === error.POSITION_UNAVAILABLE) {
-              message = "Lokasi perangkat tidak tersedia. Coba lagi atau pilih titik di peta.";
-            } else if (error.code === error.TIMEOUT) {
-              message = "Permintaan lokasi terlalu lama. Coba lagi atau pilih titik di peta.";
-            }
-            setStatus(message, "error");
-            useLocationButton.disabled = false;
-          },
-          { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-        );
-      }
-
-      useLocationButton.addEventListener("click", useDeviceLocation);
-
-      window.initCheckoutMap = function () {
-        if (!hasMapsConfig || !window.google || !google.maps || !mapElement) {
-          if (fallbackElement) fallbackElement.hidden = false;
-          setStatus("Google Maps belum siap. Alamat masih bisa diisi manual.", "error");
-          return;
-        }
-
-        if (fallbackElement) fallbackElement.hidden = true;
-        geocoder = new google.maps.Geocoder();
-        map = new google.maps.Map(mapElement, {
-          center: defaultCenter,
-          zoom: 15,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: true,
-        });
-        marker = new google.maps.Marker({
-          map: map,
-          position: defaultCenter,
-          draggable: true,
-          title: "Titik pengiriman",
-        });
-
-        var autocomplete = new google.maps.places.Autocomplete(searchInput, {
-          componentRestrictions: { country: "id" },
-          fields: ["formatted_address", "geometry", "name", "place_id"],
-        });
-
-        autocomplete.addListener("place_changed", function () {
-          var place = autocomplete.getPlace();
-          if (!place.geometry || !place.geometry.location) {
-            setStatus("Alamat tidak ditemukan. Coba kata kunci lain atau pilih titik di peta.", "error");
-            return;
-          }
-          var selectedAddress = place.formatted_address || place.name || searchInput.value;
-          moveMarker(place.geometry.location, {
-            address: selectedAddress,
-            placeId: place.place_id || "",
-          });
-          map.setZoom(17);
-          setStatus("Alamat dipilih dari pencarian Google Maps.", "success");
-        });
-
-        map.addListener("click", function (event) {
-          moveMarker(event.latLng, {});
-          reverseGeocode(event.latLng);
-        });
-
-        marker.addListener("dragend", function (event) {
-          moveMarker(event.latLng, {});
-          reverseGeocode(event.latLng);
-        });
-
-        setStatus("Peta siap. Cari alamat, klik peta, geser pin, atau gunakan lokasi perangkat.", "success");
-      };
-
-      if (!hasMapsConfig) {
-        if (fallbackElement) fallbackElement.hidden = false;
-        setStatus("Google Maps belum aktif. Isi GOOGLE_MAPS_API_KEY untuk mengaktifkan peta checkout.", "error");
-      }
-    })();
-  </script>
-  {% if google_maps_api_key %}
-  <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places&callback=initCheckoutMap&loading=async" async defer></script>
-  {% endif %}
   <script>
     (function () {
       var paymentMethod = document.getElementById("payment_method");
