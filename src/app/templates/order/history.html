@@ -188,9 +188,6 @@
                 <td>Rp {{ "{:,}".format(order.total_amount).replace(',', '.') }}</td>
                 <td>
                   <p class="address-note"><strong>Alamat:</strong> {{ order.address }}</p>
-                  {% if order.delivery_maps_url %}
-                    <p class="address-note"><a class="proof-link" href="{{ order.delivery_maps_url }}" target="_blank" rel="noopener">Buka titik Google Maps</a></p>
-                  {% endif %}
                   {% if order["items"] %}
                     <ul class="item-list">
                       {% for item in order["items"] %}
